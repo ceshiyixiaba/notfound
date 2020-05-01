@@ -1,0 +1,22 @@
+<!-- Please don't remove the information of theme makers. -->
+Hugo Theme <a href="https://github.com/amazingrise/hugo-theme-diary">Diary</a> by <a href="https://amazingrise.net">Rise</a>
+<br>
+Ported from <a href="https://mak1t0.cc/" target="_blank" rel="noreferrer noopener">Makito</a>'s <a href="https://github.com/SumiMakito/hexo-theme-journal/" target="_blank" rel="noreferrer noopener">Journal.</a> <br>
+<br>
+<!-- Because this project is under MIT licence. -->
+&copy;
+	{{ if .Site.Copyright }}
+	{{ now.Format "2006" }}<br>{{ .Site.Copyright | safeHTML }}
+	{{ else }}
+	{{.Site.Home.Date.Year}} {{.Site.Title}}
+	{{ end }}
+
+<script>
+	var _hmt = _hmt || [];
+	(function () {
+		var hm = document.createElement("script");
+		hm.src = "https://hm.baidu.com/hm.js?f949ca6d9df034921c6c97be6180abb1";
+		var s = document.getElementsByTagName("script")[0];
+		s.parentNode.insertBefore(hm, s);
+	})();
+</script>
