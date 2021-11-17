@@ -128,7 +128,7 @@ ngr2VUXo
 =9WhE
 -----END PGP SIGNATURE-----
 ```
-- `status-fd` 将状态信息打印到标准输出(2)
+- `status-fd` 将状态信息打印到 stderr(2)
 - `b(detach-sign)` 内容和签名分离
 - `s(sign)` 签名
 - `a(armor)` 输出ASCII 文本
