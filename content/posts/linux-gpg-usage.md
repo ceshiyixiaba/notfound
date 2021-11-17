@@ -104,6 +104,12 @@ gpg --import public.gpg
 gpg --import --import-options restore private.gpg 
 ```
 
+## 不导入查看公钥
+
+```bash
+gpg --import-options show-only --import public.gpg
+```
+
 ## 删除
 
 ```bash
