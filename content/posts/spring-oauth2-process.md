@@ -8,8 +8,126 @@ draft: false
 
 - 认证服务器 <http://auth-server:9000>
 - 客户端 <http://127.0.0.1:8080>
+- 资源服务器 <http://127.0.0.1:8090>
 
-## 请求过程
+## 客户端启动
+
+1.1 客户端请求认证服务器，获取 OpenID Connect 配置信息：
+
+```http
+GET /.well-known/openid-configuration HTTP/1.1
+Accept: application/json, application/*+json
+Host: auth-server:9000
+```
+1.2 认证服务器响应：
+
+```text
+HTTP/1.1 200 
+Content-Type: application/json
+
+{
+  "issuer": "http://auth-server:9000",
+  "authorization_endpoint": "http://auth-server:9000/oauth2/authorize",
+  "token_endpoint": "http://auth-server:9000/oauth2/token",
+  "token_endpoint_auth_methods_supported": [
+    "client_secret_basic",
+    "client_secret_post"
+  ],
+  "jwks_uri": "http://auth-server:9000/oauth2/jwks",
+  "response_types_supported": [
+    "code"
+  ],
+  "grant_types_supported": [
+    "authorization_code",
+    "client_credentials",
+    "refresh_token"
+  ],
+  "subject_types_supported": [
+    "public"
+  ],
+  "id_token_signing_alg_values_supported": [
+    "RS256"
+  ],
+  "scopes_supported": [
+    "openid"
+  ]
+}
+```
+
+## 资源服务器启动
+
+1.1 资源服务器请求认证服务器，获取 OpenID Connect 配置信息：
+
+```http
+GET /.well-known/openid-configuration HTTP/1.1
+Accept: application/json, application/*+json
+Host: auth-server:9000
+```
+
+1.2 认证服务器响应：
+
+```text
+HTTP/1.1 200 
+Content-Type: application/json
+
+{
+  "issuer": "http://auth-server:9000",
+  "authorization_endpoint": "http://auth-server:9000/oauth2/authorize",
+  "token_endpoint": "http://auth-server:9000/oauth2/token",
+  "token_endpoint_auth_methods_supported": [
+    "client_secret_basic",
+    "client_secret_post"
+  ],
+  "jwks_uri": "http://auth-server:9000/oauth2/jwks",
+  "response_types_supported": [
+    "code"
+  ],
+  "grant_types_supported": [
+    "authorization_code",
+    "client_credentials",
+    "refresh_token"
+  ],
+  "subject_types_supported": [
+    "public"
+  ],
+  "id_token_signing_alg_values_supported": [
+    "RS256"
+  ],
+  "scopes_supported": ["openid"]
+}
+```
+
+2.1 资源服务器请求认证服务器：
+
+```http
+GET /oauth2/jwks HTTP/1.1
+Host: auth-server:9000
+```
+
+2.2 认证服务器响应：
+
+```text
+HTTP/1.1 200 
+Content-Type: application/json;charset=ISO-8859-1
+
+{
+  "keys": [
+    {
+      "kty": "RSA",
+      "e": "AQAB",
+      "kid": "34714270-1e78-444a-9eca-4bc33523f5e2",
+      "n": "0eiWxWDlrl2WuMp6fJiWDZiwaDKio38U1_yWWI-3yPw3nNL41xTLwxb0dNQ5LGkJhuZfdz4QFQlDnH7vGxJp2VH2H1HgmwuTcN4kIExVxP9Br1e93DIruWCnTXD_CP4S-SQ39_JtsvEpJ5VO4we2KmaN9TX0RUpUlGW5kQyDbpltKo-CwUR9rGfzgR0AxEQ1MWyGaWHyJ-KH3pmQbCRzqkU00zFa1W0NHiXSGzbTmoTuLUlS11EUz8RpK-fVTPdEE2QknLkj25PfmeLFTa6Ql6MNBUWCIQ0B8x4thOHJacs3GgkOs3DZandIUEzr71oRXWPnZqe3JYBIyNUfgVdSZw"
+    }
+  ]
+}
+```
+
+- `kty` (key type) Key 类型为 RSA
+- `e` (exponent) 指数 Base64urlUInt 编码
+- `kid` Key id
+- `n` (modulus) 模
+
+## 认证过程
 
 1.1 浏览器请求客户端：
 
@@ -146,6 +264,49 @@ HTTP/1.1 200
 Hello, user
 ```
 
+## 请求资源
+
+1.1 客户端请求资源：
+
+```http
+GET /messages HTTP/1.1
+Authorization: Bearer eyJraWQiOiIzNDcxNDI3MC0xZTc4LTQ0NGEtOWVjYS00YmMzMzUyM2Y1ZTIiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiYXVkIjoibWVzc2FnaW5nLWNsaWVudCIsIm5iZiI6MTYzNzE1NTg2MSwic2NvcGUiOlsib3BlbmlkIl0sImlzcyI6Imh0dHA6XC9cL2F1dGgtc2VydmVyOjkwMDAiLCJleHAiOjE2MzcxNTYxNjEsImlhdCI6MTYzNzE1NTg2MX0.PfpiwdStUcuKdB5kAChWAzWaoSV_vmBaQyjUATsi-LPSZRAUu7vOVED5LrtLqHqqyfgM_GIR61RxCxwt3u3zGfEzhmqSIcMQRs-yZUc977zBPBZsT9zM0Wff1cP-tX7yhWRC8lBhcLHyYrDLXhTteg788WBXNBwXOrvUjTm9icSU_2rvm9YkQkxbfaxKrtxZ1sMMcFIMZlIpn2hjA5irYaLqoVnf4d_RlM5_H73kzt3VC12DUyulA4jCkqxqdyfdddmO6F8HrKKbMaDqLOmJfcztBsPG4HRappqKniFmSQevSUMj_cIUxS5HgQJE2Zi_2wHCG4jPpRXa1SR_LBhCRQ
+Host: 127.0.0.1:8090
+```
+
+1.1.1 资源服务器请求认证服务器：
+
+```http
+GET /oauth2/jwks HTTP/1.1
+Accept: application/json, application/jwk-set+json
+Host: auth-server:9000
+```
+
+1.1.2 认证服务器响应：
+
+```text
+HTTP/1.1 200 
+
+{
+  "keys": [
+    {
+      "kty":"RSA",
+      "e":"AQAB",
+      "kid":"34714270-1e78-444a-9eca-4bc33523f5e2",
+      "n":"0eiWxWDlrl2WuMp6fJiWDZiwaDKio38U1_yWWI-3yPw3nNL41xTLwxb0dNQ5LGkJhuZfdz4QFQlDnH7vGxJp2VH2H1HgmwuTcN4kIExVxP9Br1e93DIruWCnTXD_CP4S-SQ39_JtsvEpJ5VO4we2KmaN9TX0RUpUlGW5kQyDbpltKo-CwUR9rGfzgR0AxEQ1MWyGaWHyJ-KH3pmQbCRzqkU00zFa1W0NHiXSGzbTmoTuLUlS11EUz8RpK-fVTPdEE2QknLkj25PfmeLFTa6Ql6MNBUWCIQ0B8x4thOHJacs3GgkOs3DZandIUEzr71oRXWPnZqe3JYBIyNUfgVdSZw"
+    }
+  ]
+}
+```
+
+1.2 资源服务器响应：
+
+```text
+HTTP/1.1 200 
+
+["Message 1","Message 2","Message 3"]
+```
+
 ## JWT
 
 JWT 格式 `header.payload.signature`
@@ -210,5 +371,6 @@ JWT 格式 `header.payload.signature`
 
 ## 参考
 
-示例来源，有改动
-- <https://github.com/spring-projects/spring-authorization-server/tree/0.2.0/samples/boot/oauth2-integration>
+- [示例来源，有改动](https://github.com/spring-projects/spring-authorization-server/tree/0.2.0/samples/boot/oauth2-integration)
+- https://openid.net/specs/openid-connect-discovery-1_0.html
+- https://datatracker.ietf.org/doc/html/rfc7518#section-6.3 
