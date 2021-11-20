@@ -19,7 +19,7 @@ GET /.well-known/openid-configuration HTTP/1.1
 Accept: application/json, application/*+json
 Host: auth-server:9000
 ```
-1.2 认证服务器响应：
+1.2 认证服务器响应，返回 OpenID Connect 配置：
 
 ```text
 HTTP/1.1 200 
@@ -64,7 +64,7 @@ Accept: application/json, application/*+json
 Host: auth-server:9000
 ```
 
-1.2 认证服务器响应：
+1.2 认证服务器响应，返回 OpenID Content 配置：
 
 ```text
 HTTP/1.1 200 
@@ -93,18 +93,20 @@ Content-Type: application/json
   "id_token_signing_alg_values_supported": [
     "RS256"
   ],
-  "scopes_supported": ["openid"]
+  "scopes_supported": [
+    "openid"
+  ]
 }
 ```
 
-2.1 资源服务器请求认证服务器：
+2.1 资源服务器请求认证服务器，获取 jwk(JSON Web Key)：
 
 ```http
 GET /oauth2/jwks HTTP/1.1
 Host: auth-server:9000
 ```
 
-2.2 认证服务器响应：
+2.2 认证服务器响应，返回 jwk 信息：
 
 ```text
 HTTP/1.1 200 
@@ -123,7 +125,7 @@ Content-Type: application/json;charset=ISO-8859-1
 ```
 
 - `kty` (key type) Key 类型为 RSA
-- `e` (exponent) 指数 Base64urlUInt 编码
+- `e` (exponent) 指数 Base64urlUInt 编码。65537(0x10001) 分成每八位一组 [1,0,1]，再进行 base64url 编码 `Base64.urlsafe_encode64("\x01\x00\x01")`
 - `kid` Key id
 - `n` (modulus) 模
 
@@ -273,8 +275,9 @@ GET /messages HTTP/1.1
 Authorization: Bearer eyJraWQiOiIzNDcxNDI3MC0xZTc4LTQ0NGEtOWVjYS00YmMzMzUyM2Y1ZTIiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiYXVkIjoibWVzc2FnaW5nLWNsaWVudCIsIm5iZiI6MTYzNzE1NTg2MSwic2NvcGUiOlsib3BlbmlkIl0sImlzcyI6Imh0dHA6XC9cL2F1dGgtc2VydmVyOjkwMDAiLCJleHAiOjE2MzcxNTYxNjEsImlhdCI6MTYzNzE1NTg2MX0.PfpiwdStUcuKdB5kAChWAzWaoSV_vmBaQyjUATsi-LPSZRAUu7vOVED5LrtLqHqqyfgM_GIR61RxCxwt3u3zGfEzhmqSIcMQRs-yZUc977zBPBZsT9zM0Wff1cP-tX7yhWRC8lBhcLHyYrDLXhTteg788WBXNBwXOrvUjTm9icSU_2rvm9YkQkxbfaxKrtxZ1sMMcFIMZlIpn2hjA5irYaLqoVnf4d_RlM5_H73kzt3VC12DUyulA4jCkqxqdyfdddmO6F8HrKKbMaDqLOmJfcztBsPG4HRappqKniFmSQevSUMj_cIUxS5HgQJE2Zi_2wHCG4jPpRXa1SR_LBhCRQ
 Host: 127.0.0.1:8090
 ```
+- `Authorization` 格式为 `Bearer TOKEN`
 
-1.1.1 资源服务器请求认证服务器：
+1.1.1 资源服务器请求认证服务器，获取 jwk：
 
 ```http
 GET /oauth2/jwks HTTP/1.1
@@ -282,7 +285,7 @@ Accept: application/json, application/jwk-set+json
 Host: auth-server:9000
 ```
 
-1.1.2 认证服务器响应：
+1.1.2 认证服务器响应 jwk 信息：
 
 ```text
 HTTP/1.1 200 
@@ -299,7 +302,7 @@ HTTP/1.1 200
 }
 ```
 
-1.2 资源服务器响应：
+1.2 认证通过，资源服务器响应：
 
 ```text
 HTTP/1.1 200 
@@ -311,7 +314,7 @@ HTTP/1.1 200
 
 JWT 格式 `header.payload.signature`
 
-### access_token
+### Access Token
 
 ```text
 "access_token": "eyJraWQiOiI5OTQyMTFiYi05YzIzLTQyY2MtYThlYy1jMjI0YzE5NGE4ZWUiLCJhbGciOiJSUzI1NiJ9
@@ -330,7 +333,7 @@ JWT 格式 `header.payload.signature`
   - `alg` 签名算法
 
 
-### id_token
+### ID Token
 
 ```text
 "id_token": "eyJraWQiOiI5OTQyMTFiYi05YzIzLTQyY2MtYThlYy1jMjI0YzE5NGE4ZWUiLCJhbGciOiJSUzI1NiJ9
