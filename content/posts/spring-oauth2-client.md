@@ -1,7 +1,7 @@
 ---
 title: "Spring OAuth2 Client"
 date: 2021-10-26T21:44:13+08:00
-tags: ["spring"]
+tags: ["spring", "oauth2"]
 categories: ["spring"]
 draft: false
 ---

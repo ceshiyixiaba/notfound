@@ -2,7 +2,7 @@
 title: "Spring OpenID Connect 请求过程"
 date: 2021-11-14T22:13:10+08:00
 tags: ["oauth2", "spring", "java"]
-categories: [""]
+categories: ["oauth2"]
 draft: false
 ---
 

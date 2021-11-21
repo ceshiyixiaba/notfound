@@ -1,7 +1,7 @@
 ---
 title: "Spring Oauth2 Client JPA"
 date: 2021-10-31T14:52:09+08:00
-tags: ["spring"]
+tags: ["spring", "oauth2"]
 categories: ["spring"]
 draft: false
 ---
