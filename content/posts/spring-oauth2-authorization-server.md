@@ -3,7 +3,7 @@ title: "Spring OAuth2 认证服务器"
 date: 2021-11-20T10:29:42+08:00
 tags: ["spring", "oauth2"]
 categories: ["oauth2"]
-draft: true
+draft: false
 ---
 
 ## 获取 OpenID 配置信息 `/.well-known/openid-configuration`
