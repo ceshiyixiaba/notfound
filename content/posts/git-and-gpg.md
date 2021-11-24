@@ -20,7 +20,7 @@ git config --global tag.forceSignAnnotated true
 git config --global commit.gpgSign true
 ```
 
-## 签名
+## GPG 签名
 
 ### 签名标签
 
@@ -140,3 +140,30 @@ ngr2VUXo
 
 -   GPG 公钥包含的邮箱与用户已激活邮箱一致，GPG 公钥才能验证通过。
 -   提交的 committer 邮箱包含在验证通过的 GPG 公钥中，提交才能验证通过。而本地使用 git 命令查看签名时只会验证签名是否有效，不会对邮箱进行验证。
+
+## SSH 签名
+
+- Git 2.34+
+
+## 配置
+
+```bash
+# 签名格式 ssh
+git config gpg.format ssh
+
+# 签名私钥路径
+git config user.signingKey ~/.ssh/id_ed25519
+
+# 信任的公钥列表，验证时使用
+git config gpg.ssh.allowedSignersFile  ~/.ssh/allowed_signers_file
+```
+
+文件 `~/.ssh/allowed_signers_file` 格式如：
+
+```text
+notfound@notfound.cn ssh-rsa AAAAX1...
+```
+
+## 参考
+
+- http://git-scm.com/docs/git-config
