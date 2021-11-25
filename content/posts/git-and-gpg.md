@@ -141,11 +141,96 @@ ngr2VUXo
 -   GPG 公钥包含的邮箱与用户已激活邮箱一致，GPG 公钥才能验证通过。
 -   提交的 committer 邮箱包含在验证通过的 GPG 公钥中，提交才能验证通过。而本地使用 git 命令查看签名时只会验证签名是否有效，不会对邮箱进行验证。
 
+## X.509 (gpgsm)
+
+### 生成自签名证书
+
+```bash
+gpgsm --generate-key --output=notfound.cn.pem
+```
+- `-output` 将证书信息保存到 `notfound.cn.pem`
+
+创建自签名证书，输入内容如下：
+
+```text
+Create self-signed certificate? (y/N) y
+These parameters are used:
+    Key-Type: RSA
+    Key-Length: 3072
+    Key-Usage: sign, encrypt
+    Serial: random
+    Name-DN: CN=notfound.cn
+    Name-Email: notfound@notfound.cn
+    Name-DNS: notfound.cn
+    Name-URI: notfound.cn
+```
+
+### 导入证书
+
+```
+gpgsm --import notfound.cn.pem
+```
+
+查看证书列表:
+
+```bash
+gpgsm --list-keys
+```
+
+输出结果：
+
+```text
+           ID: 0x6A5ECD01
+          S/N: 2FECBBE7B6829327
+       Issuer: /CN=notfound.cn
+      Subject: /CN=notfound.cn
+          aka: (uri notfound.cn)
+          aka: (dns-name notfound.cn)
+          aka: notfound@notfound.cn
+     validity: 2021-11-25 09:30:23 through 2063-04-05 17:00:00
+     key type: 3072 bit RSA
+    key usage: digitalSignature nonRepudiation keyEncipherment dataEncipherment
+ chain length: unlimited
+  fingerprint: 64:3B:BC:23:AC:6A:67:04:5C:EF:31:8B:C9:A6:6A:A7:6A:5E:CD:01
+```
+
+### 添加到信任列表
+
+#### 方法1: 尝试签名
+
+```bash
+gpgsm -bsau 0x6A5ECD01 --sign README.md
+```
+
+利用弹出框，自动添加
+
+#### 方法2: 手动添加
+
+编辑 `~/.gnupg/gpg-agent.conf`
+
+```text
+# CN=notfound.cn
+64:3B:BC:23:AC:6A:67:04:5C:EF:31:8B:C9:A6:6A:A7:6A:5E:CD:01 S relax
+```
+
+之后重新加载 `gpg-agent`
+
+```bash
+gpgconf --reload gpg-agent
+```
+
+### 配置 Git
+
+```
+git config gpg.format x509
+git config user.signingKey 0x6A5ECD01
+```
+
 ## SSH 签名
 
 - Git 2.34+
 
-## 配置
+### 配置
 
 ```bash
 # 签名格式 ssh
