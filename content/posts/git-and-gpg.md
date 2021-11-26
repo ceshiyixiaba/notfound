@@ -4,7 +4,6 @@ date: 2019-02-16T22:43:00+08:00
 tags: ["gpg", "git"]
 ---
 
-本文仅介绍 Git 使用 GPG 进行签名，关于 GPG 参考 [GPG 使用](/posts/linux-gpg-usage/)。
 
 ## 配置 Git
 
@@ -21,6 +20,8 @@ git config --global commit.gpgSign true
 ```
 
 ## GPG 签名
+
+[生成 GPG KEY](/posts/linux-gpg-usage/)
 
 ### 签名标签
 
@@ -143,89 +144,43 @@ ngr2VUXo
 
 ## X.509 (gpgsm)
 
-### 生成自签名证书
+[生成 X.509](/posts/linux-gpgsm-usage/)
 
-```bash
-gpgsm --generate-key --output=notfound.cn.pem
-```
-- `-output` 将证书信息保存到 `notfound.cn.pem`
-
-创建自签名证书，输入内容如下：
-
-```text
-Create self-signed certificate? (y/N) y
-These parameters are used:
-    Key-Type: RSA
-    Key-Length: 3072
-    Key-Usage: sign, encrypt
-    Serial: random
-    Name-DN: CN=notfound.cn
-    Name-Email: notfound@notfound.cn
-    Name-DNS: notfound.cn
-    Name-URI: notfound.cn
-```
-
-### 导入证书
-
-```
-gpgsm --import notfound.cn.pem
-```
-
-查看证书列表:
-
-```bash
-gpgsm --list-keys
-```
-
-输出结果：
-
-```text
-           ID: 0x6A5ECD01
-          S/N: 2FECBBE7B6829327
-       Issuer: /CN=notfound.cn
-      Subject: /CN=notfound.cn
-          aka: (uri notfound.cn)
-          aka: (dns-name notfound.cn)
-          aka: notfound@notfound.cn
-     validity: 2021-11-25 09:30:23 through 2063-04-05 17:00:00
-     key type: 3072 bit RSA
-    key usage: digitalSignature nonRepudiation keyEncipherment dataEncipherment
- chain length: unlimited
-  fingerprint: 64:3B:BC:23:AC:6A:67:04:5C:EF:31:8B:C9:A6:6A:A7:6A:5E:CD:01
-```
-
-### 添加到信任列表
-
-#### 方法1: 尝试签名
-
-```bash
-gpgsm -bsau 0x6A5ECD01 --sign README.md
-```
-
-利用弹出框，自动添加
-
-#### 方法2: 手动添加
-
-编辑 `~/.gnupg/gpg-agent.conf`
-
-```text
-# CN=notfound.cn
-64:3B:BC:23:AC:6A:67:04:5C:EF:31:8B:C9:A6:6A:A7:6A:5E:CD:01 S relax
-```
-
-之后重新加载 `gpg-agent`
-
-```bash
-gpgconf --reload gpg-agent
-```
-
-### 配置 Git
+### 配置
 
 ```
 git config gpg.format x509
 git config user.signingKey 0x6A5ECD01
 ```
 
+### 格式
+
+```text
+$ git cat-file -p 5ad480e2cd0bb8fbed4be433f97d3bccf5c2861e
+tree c1a1aac0d464b46460231af69aee3b59768a3e5a
+parent 3f90f0292104db6ca7da8f3a9f22ebfd70d3a325
+author notfound@notfound.cn <notfound@notfound.cn> 1637898203 +0800
+committer notfound@notfound.cn <notfound@notfound.cn> 1637898203 +0800
+gpgsig -----BEGIN SIGNED MESSAGE-----
+ MIAGCSqGSIb3DQEHAqCAMIACAQExDzANBglghkgBZQMEAgEFADCABgkqhkiG9w0B
+ BwEAADGCAmMwggJfAgEBMCIwFjEUMBIGA1UEAxMLbm90Zm91bmQuY24CCE0i4LIK
+ YU6RMA0GCWCGSAFlAwQCAQUAoIGTMBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEw
+ HAYJKoZIhvcNAQkFMQ8XDTIxMTEyNjAzNDMyM1owKAYJKoZIhvcNAQkPMRswGTAL
+ BglghkgBZQMEAQIwCgYIKoZIhvcNAwcwLwYJKoZIhvcNAQkEMSIEILX6cdJJWQO2
+ sLTwYFMZGQliwt63yCc3OjTJZU8cA3EkMA0GCSqGSIb3DQEBAQUABIIBgBzVc3x5
+ YCMbcB8+wWTef7U/9SxXg+B4bQduLMNiGg6p1pvOl3jerkFgn0+kafZU1DmRGQzj
+ HOYwNdL9uPchpgeCsJ5RpWB4J5zEHhU3pfln6f9lkf0kyy/0Wl7AvMj4NtMmI3MN
+ 1BchrDPFBREfCXg1kUqpVoMcJ/m/BPbAU8SKxXQ2rQP5jsWEorny9LyVkImlQNJ2
+ t5w9ZqAgg3XV8C/jhEU7iBrH+ehl14AyFexURyEDtX6qPJi4JE0mFgiGqYHUVxz0
+ OEtDehPUAVfpNbbd/Bip0pjlhmIr9Y104VIOR70S11xsaaJ7Q2cZSkZQCpnkF861
+ dshVi/II86I+dVTIDr3QVYou0orzsRNPxhIw2IQlFvJdwiWJCb7j70L1CcGqvvty
+ g+61sgeZ3jgLlRMhcIdmhFrrW67atm8zsssLdp/VgINFfm0waZpwUDwDu3p8ltrC
+ l8MQVWtfLVTD6zz4N6iVkKZliPeAePys5eAUevozIDYjml+CUDUCAcLYEQAAAAAA
+ AA==
+ -----END SIGNED MESSAGE-----
+
+x509 sign
+```
 ## SSH 签名
 
 - Git 2.34+
@@ -247,6 +202,24 @@ git config gpg.ssh.allowedSignersFile  ~/.ssh/allowed_signers_file
 
 ```text
 notfound@notfound.cn ssh-rsa AAAAX1...
+```
+
+### 签名内容
+
+```text
+$ git cat-file -p 3f90f0292104db6ca7da8f3a9f22ebfd70d3a325
+tree fdd84955992ed2550d666577e0b0d7195bc3a9b5
+parent 0df45ba5e8c7484ad1af03802e5b6c7af29453fc
+author notfound@notfound.cn <notfound@notfound.cn> 1637897983 +0800
+committer notfound@notfound.cn <notfound@notfound.cn> 1637897983 +0800
+gpgsig -----BEGIN SSH SIGNATURE-----
+ U1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgu8GYtbehZb/8nRMJpRDrVdip+f
+ Fjn19SgK5G32dGcJIAAAADZ2l0AAAAAAAAAAZzaGE1MTIAAABTAAAAC3NzaC1lZDI1NTE5
+ AAAAQJGOGHREzoCt7CAqqd6LJ4ZKbBcUb588w/eFNggP3VeEC3WV8gx+q7zWnXZMCKqxQu
+ 3BZ1qaWajxFKdtIkxDTQk=
+ -----END SSH SIGNATURE-----
+
+SSH Sign
 ```
 
 ## 参考

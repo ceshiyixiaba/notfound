@@ -128,5 +128,3 @@ gpg --delete-key E609071A680F01521759F2AD6845FD9F1A3352AF
 - [用 PGP 保护代码完整性（五）：将子密钥移到一个硬件设备中](https://linux.cn/article-10415-1.html)
 - [用 PGP 保护代码完整性（六）：在 Git 上使用 PGP](https://linux.cn/article-10421-1.html)
 - [用 PGP 保护代码完整性（七）：保护在线帐户](https://linux.cn/article-10432-1.html)
-
-## 参考
