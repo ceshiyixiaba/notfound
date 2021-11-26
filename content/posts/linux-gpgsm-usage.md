@@ -11,7 +11,7 @@ tags: ["gpg","gpgsm"]
 ```bash
 gpgsm --generate-key --output=notfound.cn.pem
 ```
-- `-output` 将证书信息保存到 `notfound.cn.pem`
+- `--output` 将证书信息保存到 `notfound.cn.pem`
 
 创建自签名证书，输入内容如下：
 
@@ -83,6 +83,12 @@ gpgsm -bsau 0xD4C585CE --sign README.md
 
 ```bash
 gpgconf --reload gpg-agent
+```
+
+## 导出为 PKCS#12
+
+```bash
+gpgsm --export-secret-key-p12 --output=notfound.cn.p12 0xD4C585CE
 ```
 
 ## 参考
