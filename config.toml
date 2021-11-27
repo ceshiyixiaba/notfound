@@ -8,6 +8,7 @@ copyright = """
 
 [params]
 subtitle = "千里之行始于足下"
+showAllPostsArchive = true
 
 [taxonomies]
 tag = "tags"
