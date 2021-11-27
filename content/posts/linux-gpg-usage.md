@@ -110,6 +110,30 @@ gpg --import --import-options restore private.gpg
 gpg --import-options show-only --import public.gpg
 ```
 
+### 信任
+
+GitHub GPG 公钥：
+
+```bash
+wget https://github.com/web-flow.gpg
+gpg --import web-flow.gpg
+```
+
+导入的公钥进行验证时可能显示如下信息：
+
+```text
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+```
+
+调整信任级别：
+
+```bash
+gpg --edit-key 5DE3E0509C47EA3CF04A42D34AEE18F83AFDEB23
+> trust
+> quit
+```
+
 ## 删除
 
 ```bash
@@ -128,5 +152,3 @@ gpg --delete-key E609071A680F01521759F2AD6845FD9F1A3352AF
 - [用 PGP 保护代码完整性（五）：将子密钥移到一个硬件设备中](https://linux.cn/article-10415-1.html)
 - [用 PGP 保护代码完整性（六）：在 Git 上使用 PGP](https://linux.cn/article-10421-1.html)
 - [用 PGP 保护代码完整性（七）：保护在线帐户](https://linux.cn/article-10432-1.html)
-
-## 参考
