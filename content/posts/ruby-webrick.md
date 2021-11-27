@@ -1,7 +1,7 @@
 ---
 title: "Webrick 工作过程"
 date: 2020-05-19T20:23:43+08:00
-tags: ["ruby", "web"]
+tags: ["ruby"]
 draft: false
 ---
 

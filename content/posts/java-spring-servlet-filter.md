@@ -1,11 +1,8 @@
-+++
-title = "Spring Boot 添加 servlet 以及 filter"
-author = ["likui"]
-date = 2021-04-14T19:50:00+08:00
-lastmod = 2021-04-14T19:54:15+08:00
-tags = ["spring", "servlet"]
-draft = false
-+++
+---
+title: "Spring Boot 添加 servlet 以及 filter"
+date: 2021-04-14T19:50:00+08:00
+tags: ["spring", "java"]
+---
 
 ## Spring Boot 添加 servlet 以及 filter {#spring-boot-添加-servlet-以及-filter}
 

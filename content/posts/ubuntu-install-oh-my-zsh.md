@@ -1,10 +1,8 @@
-+++
-title = "Ubuntu 安装配置 oh-my-zsh"
-author = ["notfound"]
-date = 2018-04-21T17:30:00+08:00
-tags = ["zsh"]
-draft = false
-+++
+---
+title: "Ubuntu 安装配置 oh-my-zsh"
+date: 2018-04-21T17:30:00+08:00
+tags: ["linux", "tool"]
+---
 
 ## 安装
 

@@ -1,11 +1,8 @@
-+++
-title = "Servlet 中使用 Freemarker"
-author = ["likui"]
-date = 2021-02-27
-lastmod = 2021-02-27T18:13:27+08:00
-tags = ["java"]
-draft = false
-+++
+---
+title: "Servlet 中使用 Freemarker"
+date: 2021-02-27T18:13:27+08:00
+tags: ["java"]
+---
 
 ## Servlet 使用 freemarker {#servlet-使用-freemarker}
 

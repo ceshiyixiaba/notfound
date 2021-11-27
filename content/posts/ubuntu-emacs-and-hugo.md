@@ -1,10 +1,8 @@
-+++
-title = "使用 spacemacs 和 hugo 写博客"
-author = ["notfound"]
-date = 2018-12-23T10:18:00+08:00
-tags = ["emacs", "hugo"]
-draft = false
-+++
+---
+title: "使用 spacemacs 和 hugo 写博客"
+date: 2018-12-23T10:18:00+08:00
+tags: ["emacs", "linux"]
+---
 
 [Spacemacs org layer](https://github.com/syl20bnr/spacemacs/tree/develop/layers/+emacs/org#hugo-support) 提供了对 [Hugo](https://gohugo.io) 的支持。
 

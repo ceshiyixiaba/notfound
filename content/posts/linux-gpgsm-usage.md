@@ -1,7 +1,7 @@
 ---
 title: "Linux gpgsm 使用"
 date: 2021-11-26T09:59:36+08:00
-tags: ["gpg","gpgsm"]
+tags: ["gpg"]
 ---
 
 - Ubuntu 20.04
