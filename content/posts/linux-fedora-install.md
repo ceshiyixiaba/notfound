@@ -1,45 +1,101 @@
 ---
 title: "Linux Fedora Install"
 date: 2021-11-29T13:50:20+08:00
-tags: [""]
+tags: ["linux"]
 categories: [""]
 draft: true
 ---
 
-mv /etc/yum.repos.d/fedora.repo /etc/yum.repos.d/fedora.repo.backup
-mv /etc/yum.repos.d/fedora-updates.repo /etc/yum.repos.d/fedora-updates.repo.backup
-wget -O /etc/yum.repos.d/fedora.repo http://mirrors.aliyun.com/repo/fedora.repo
-wget -O /etc/yum.repos.d/fedora-updates.repo http://mirrors.aliyun.com/repo/fedora-updates.repo
-yum makecache
+## docker
 
-dnf install git vim emacs java-11-openjdk-devel ruby
-dnf install google-chrome-stable
-# 调整字体
-dnf install gnome-tweaks
+```bash
+sudo setsebool -P httpd_can_network_connect 1
+```
 
-# chsh zsh on-my-zsh
+- https://stackoverflow.com/questions/23948527/13-permission-denied-while-connecting-to-upstreamnginx
+- https://docs.docker.com/engine/reference/commandline/run/#mount-volumes-from-container---volumes-from
+- https://stackoverflow.com/questions/24288616/permission-denied-on-accessing-host-directory-in-docker
+
+### Git
+
+```bash
+sudo dnf install git vim ruby
+sudo dnf install docker
+```
+
+```bash
+sudo mv /etc/yum.repos.d/fedora.repo /etc/yum.repos.d/fedora.repo.backup
+sudo mv /etc/yum.repos.d/fedora-updates.repo /etc/yum.repos.d/fedora-updates.repo.backup
+sudo wget -O /etc/yum.repos.d/fedora.repo http://mirrors.aliyun.com/repo/fedora.repo
+sudo wget -O /etc/yum.repos.d/fedora-updates.repo http://mirrors.aliyun.com/repo/fedora-updates.repo
+
+sudo dnf makecache
+```
+
+## on-my-zsh
+
+```bash
 dnf install util-linux-user zsh
 sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+```
 
-https://get.cloudv2.net/osubscribe.php?sid=184521&token=wqBJbO1IUaNa
+## vim
 
-# 关闭动画
-gsettings set org.gnome.desktop.interface enable-animations false
+```
+sudo dnf install vim
+git clone --depth=1 git://github.com/amix/vimrc.git ~/.vim_runtime
+sh ~/.vim_runtime/install_awesome_vimrc.sh
+```
 
-# spacemacs
-git clone -b develop https://github.com/syl20bnr/spacemacs ~/.emacs.d
+## emacs
 
-# vim
+```bash
+sudo dnf install emacs-nox the_silver_searcher 
+git clone -b develop git://github.com/syl20bnr/spacemacs ~/.emacs.d
+```
 
+## PostgreSQL
 
-# postgresql
+```bash
 sudo postgresql-setup --initdb
 systemctl start postgresql.service
 rpm -ql postgresql-server
 
 # psql: 错误: 致命错误:  用户 "example" Ident 认证失败
 sudo vim /var/lib/pgsql/data/pg_hba.conf
+```
 
-# ag
-sudo dnf install the_silver_searcher
+## mount
+
+```
+sudo lsblk -f
+vim /etc/fstab
+systemctl daemon-reload
+```
+- https://linuxhint.com/uuid_storage_devices_linux/
+
+## 桌面
+
+### 调整字体
+
+```bash
+sudo dnf install gnome-tweaks
+```
+
+### 关闭动画
+
+```bash
+gsettings set org.gnome.desktop.interface enable-animations false
+```
+
+## Nginx
+
+```bash
+setsebool -P httpd_can_network_connect 1
+sudo chcon -v -R --type=httpd_sys_content_t /path/to/www/
+```
+
+- https://stackoverflow.com/questions/6795350/nginx-403-forbidden-for-all-files
+- https://stackoverflow.com/questions/23948527/13-permission-denied-while-connecting-to-upstreamnginx
+
 ## 参考
