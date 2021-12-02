@@ -1,10 +1,11 @@
 ---
-title: "Ubuntu 配置 DNS"
+title: "Linux 配置 DNS"
 date: 2021-10-17T22:39:08+08:00
 tags: ["linux"]
 ---
 
 - Ubuntu 20.04
+- Fedora 35
 
 可通过 `resolvectl` 或者 `systemd-resolve` 对 DNS 进行配置。
 
@@ -24,11 +25,12 @@ resolvectl dns
 ```bash
 sudo resolvectl dns 2 119.29.29.29
 
-resolvectl dns                    
+resolvectl dns
 # 输出:
 # Global:
 # Link 2 (wlp0s20f3): 119.29.29.29
 ```
+- fedora 35 重启 ` systemd-resolved.service` 后设置失效。
 
 ## 通过 Systemd
 
@@ -43,6 +45,7 @@ systemd-resolve --status
 ```bash
 sudo systemd-resolve --interface=2 --set-dns=119.29.29.29
 ```
+- fedora 35 重启 ` systemd-resolved.service` 后设置失效。
 
 设置全局 DNS:
 
@@ -50,7 +53,7 @@ sudo systemd-resolve --interface=2 --set-dns=119.29.29.29
 # 编辑 DNS
 sudo vim /etc/systemd/resolved.conf
 # 重启 systemd-resolved，让配置生效
-sudo service systemd-resolved restart
+sudo systemctl restart systemd-resolved.service
 systemd-resolve --status
 ```
 
