@@ -56,8 +56,10 @@ git config --global core.quotepath false
 
 # 设置 HTTP 代理
 git config --global http."https://github.com/".proxy http://127.0.0.1:8118
-```
 
+# git://github.com 代替 https://github.com
+git config --global url."git://github.com".insteadOf https://github.com
+```
 
 ## 允许普通仓库推送代码
 
