@@ -100,6 +100,15 @@ chmod 0600 ~/.pgpass
 psql -h 127.0.0.1 -U example -d example_db
 ```
 
+## Q
+
+1. sql: 错误: 致命错误:  用户 "sample" Ident 认证失败
+
+编辑 `/var/lib/pgsql/data/pg_hba.conf`：
+```conf
+host    all             sample          127.0.0.1/32            md5
+```
+
 ## 参考
 
 - [Linux downloads (Ubuntu)](https://www.postgresql.org/download/linux/ubuntu/)
