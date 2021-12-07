@@ -38,6 +38,25 @@ public class SessionConfig {
   - `AbstractSessionFixationProtectionStrategy#onAuthentication`
     - `ChangeSessionIdAuthenticationStrategy#applySessionFixation` 变更 session id
 
+### 登陆失败
+
+创建 session
+
+- `ExceptionTranslationFilter#doFilter`
+  - `ExceptionTranslationFilter#handleSpringSecurityException`
+    - `ExceptionTranslationFilter#handleAccessDeniedException`
+      - `ExceptionTranslationFilter#sendStartAuthentication`
+        - `HttpSessionRequestCache#saveRequest` 创建 session
+
+发送 session
+
+- `BasicAuthenticationEntryPoint#commence`
+  - `SessionRepositoryResponseWrapper#sendError`
+    - `SessionRepositoryResponseWrapper#doOnResponseCommitted`
+      - `SessionRepositoryResponseWrapper#onResponseCommitted`
+        - `SessionRepositoryRequestWrapper#commitSession`
+          - `HeaderHttpSessionIdResolver#setSessionId` 将 session id 写到 header
+
 ### 更新过期时间
 
 每次请求时，会刷新过期时间，session 默认过期时间为 1800s
