@@ -108,4 +108,15 @@ dnf check-update
 sudo dnf install code
 ```
 - https://code.visualstudio.com/docs/setup/linux
+
+## google-chrome
+
+开启 wayland 支持
+
+```bash
+google-chrome --enable-features=UseOzonePlatform --ozone-platform=wayland
+```
+
+- https://pychao.com/2021/01/04/using-google-chrome-chromium-with-native-wayland-backend-in-arch-linux/
+
 ## 参考
