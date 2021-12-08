@@ -1,10 +1,8 @@
-+++
-title = "使用 Systemd 定时同步 git 仓库"
-author = ["notfound"]
-date = 2018-12-31T16:31:00+08:00
-tags = ["systemd"]
-draft = false
-+++
+---
+title: "使用 Systemd 定时同步 git 仓库"
+date: 2018-12-31T16:31:00+08:00
+tags: ["systemd", "linux"]
+---
 
 系统环境：Ubuntu 18.04
 
