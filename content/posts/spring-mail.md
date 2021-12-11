@@ -4,6 +4,8 @@ date: 2021-12-10T08:50:07+08:00
 tags: ["spring", "java"]
 ---
 
+- spring boot 2.6.1
+
 ## 依赖
 
 ```gradle
