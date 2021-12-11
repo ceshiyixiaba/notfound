@@ -15,6 +15,8 @@ implementation 'org.springframework.boot:spring-boot-starter-mail'
 
 ## 配置
 
+使用本地测试邮件服务器 [mailcatcher](https://mailcatcher.me/)
+
 ```yml
 spring:
   mail:
