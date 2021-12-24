@@ -168,6 +168,19 @@ systemd-resolve --status
 
 [参考](https://askubuntu.com/questions/973017/wrong-nameserver-set-by-resolvconf-and-networkmanager)
 
+## 关闭图形界面
+
+```bash
+# 获取默认启动
+sudo systemctl get-default
+# 开机不启动图形界面
+sudo systemctl set-default multi-user.target
+# 开机启动图形界面
+sudo systemctl set-default graphical.target
+```
+
+[参考](https://linuxconfig.org/how-to-disable-enable-gui-on-boot-in-ubuntu-20-04-focal-fossa-linux-desktop)
+
 ## 其他
 
 - `google-chrome` [下载](https://dl.google.com/linux/direct/google-chrome-stable%5Fcurrent%5Famd64.deb)
