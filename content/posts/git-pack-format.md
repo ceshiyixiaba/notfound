@@ -20,17 +20,25 @@ draft: true
 
 ## 对象条目
 
-N 个对象条目，有两种类型 `undeltified` 和 `deltified`。
+头部之后，是 N 个对象条目，有两种类型 `undeltified` 和 `deltified`。
 
 ### undeltified
 
 #### 类型和长度
 
-- n-type 类型和长度(3-bit 类型, (n-1)*7+4-bit length)
+- n-byte 类型和长度(3-bit 类型, (n-1)*7+4-bit length)
 
 |------------+------------+--------------+------------+--------------|
 | 1-bit flag | 3-bit type | 4-bit length | 1-bit flag | 7-bit length |
 |------------+------------+--------------+------------+--------------|
+
+- 第 1 字节
+  - 1-bit 标志位: 1 继续读取下一位；0 结束
+  - 3-bit 类型
+  - 4-bit 长度
+- 第 2~n 字节
+  - 1-bit 标志位: 1 继续读取下一位；0 结束
+  - 7-bit 长度
 
 类型包括:
 
@@ -41,31 +49,38 @@ N 个对象条目，有两种类型 `undeltified` 和 `deltified`。
 - `OBJ_OFS_DELTA` (6)
 - `OBJ_REF_DELTA` (7)
 
+#### 被压缩的数据
+
+被压缩的数据，使用 deflate 进行压缩，需要通过被压缩数据本身计算下一条目位置。
+
+#### 示例
+
 ```text
+# git verify-pack 输出截取
 93869920eddd1d8c632cda85537d1547339472c6 commit 208 154 12
 
+# .pack 数据截取
 00000000  50 41 43 4b 00 00 00 02  00 00 00 06 90 0d 78 9c
           ----------- ============ ----------- ===== -----
           P  A  C  K  版本 2       对象数量 6
 ```
 
-- `0x90` = `0b1 001 0000` 
+- `0x90` = `0b1_001_0000` 
   - `1` 表示需要继续读取下一个字节
   - `001` 类型 commit
   - `0000` 长度最低 4 位
-- `0x0d` = `0b0 0001101`
+- `0x0d` = `0b0_0001101`
   - `0`，表示当前字节为最后一个字节
   - `0001101` 长度高 7 位
 
-所以数据长度为 `0b0001101 0000` = 0xd0 = 208 字节
+所以数据长度为 `0b0001101_0000` = 0xd0 = 208 字节， `verify-pack` 数据一致。
+这里的数据长度是压缩前的大小，无法直接计算出下一个对象条目的位置，需要通过被压缩数据的来计算。
 
-这里的数据长度是压缩前的大小，无法直接计算出下一个对象条目的位置。需要通过被压缩数据的计算下一个偏移。
+`verify-pack` 中的打包长度 154 byte = 2 byte 类型和长度 + 152 byte 压缩数据。
 
-第一个对象的偏移是 12
+第一个对象条目的偏移是 12。
 
-#### 被压缩的数据
-
-被压缩的数据，使用 zip 压缩算法
+读取压缩数据：
 
 ```ruby
 require 'zlib'
@@ -73,30 +88,38 @@ require 'zlib'
 file = File.open('objects/pack/pack-164f4734388b5ebb26bf4607048798bec6ea6494.pack', 'r')
 file.seek(12 + 2)
 zstream = Zlib::Inflate.new
-buf = zstream.inflate(file.read)
-zstream.total_out # 208
-zstream.total_in  # 152
+puts zstream.inflate(file.read)  # 被压缩的数据
+puts zstream.total_out           # 208 byte 压缩前数据大小
+puts zstream.total_in            # 152 byte 压缩后数据大小
 zstream.finish
 zstream.close
 ```
 
-被压缩的数据大小为 152，154 - 2 字节长度
+被压缩的数据大小为 152 byte。该类型为 commit，但被压缩的数据中不包含 commit oid，需要重新计算。
 
 ### deltified
 
-- n-type 类型和长度(3-bit 类型, (n-1)*7+4-bit length)
-- 两种类型，不同格式
-  - OBJ_REF_DELTA 基础对象名称
-  - OBJ_OFS_DELTA 非负的偏移量
-- 被压缩的数据
+deltified 有两种类型：REF_DELTA 和 OFS_DELTA。
+
+#### 类型和长度
+
+- n-byte 类型和长度(3-bit 类型, (n-1)*7+4-bit length)
+
+|------------+------------+--------------+------------+--------------|
+| 1-bit flag | 3-bit type | 4-bit length | 1-bit flag | 7-bit length |
+|------------+------------+--------------+------------+--------------|
 
 #### OFS DELTA
 
+#### 示例
+
 ```text
+# git verify-pack 输出截取
 5e0b62e32ef12479435b781852d35d00e7734b6e blob   167 89 335
 37d275cddcb6d23c12c9103c031c0371d49f4831 tree   38 48 424
 bc8e5eb13b8e17363744051b29a3e53bad1562cc blob   9 20 472 1 5e0b62e32ef12479435b781852d35d00e7734b6e
 
+# .pack 文件数据截取
 000001d0  a2 49 67 00 d5 2d 0c 72  69 80 09 78 9c 5b ce b8
           -----------------------  == ----- ==============
                                    0110 1001
@@ -168,7 +191,15 @@ data[54...(54+27)]
 
 以上所有内容的 SHA1 值。
 
-## 大小编码
+```ruby
+require 'digest'
+
+file = File.open('objects/pack/pack-164f4734388b5ebb26bf4607048798bec6ea6494.pack', 'r')
+
+Digest::SHA1.hexdigest(file.read(file.size-20))
+file.read.unpack1('H*')
+# 164f4734388b5ebb26bf4607048798bec6ea6494
+```
 
 
 ## 仅包含 undeltified 示例
