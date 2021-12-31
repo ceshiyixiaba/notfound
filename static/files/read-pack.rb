@@ -29,6 +29,7 @@ def patch_delta(data, object)
   get_delta_hdr_size(io)
   get_delta_hdr_size(io)
 
+  object[:delta] = []
   loop do
     cmd = io.getbyte
     break if io.eof?
@@ -42,8 +43,10 @@ def patch_delta(data, object)
     cp_size = parse_cp_param(io, cmd, 0x20, cp_size, 8)
     cp_size = parse_cp_param(io, cmd, 0x40, cp_size, 16)
 
-    object[:cp_off] = cp_off
-    object[:cp_size] = cp_size
+    object[:delta] << {
+      cp_off: cp_off,
+      cp_size: cp_size
+    }
   end
 end
 
@@ -105,12 +108,15 @@ result[:object_count].times do
 
   if object[:type] == :ofs_delta
     patch_delta(data, object)
-    ofs_delta = result[:objects].find { |o| o[:offset] == object[:ofs_offset] }
-    d = ofs_delta[:data]
-    cp_off = object[:cp_off]
-    cp_size = object[:cp_size]
-    data = object[:data] = d[cp_off...(cp_off + cp_size)]
-    object[:oid] = Digest::SHA1.hexdigest("blob #{data.size}\0".b + object[:data])
+    base_data = result[:objects].find { |o| o[:offset] == object[:ofs_offset] }[:data]
+    object[:data] = "".b
+    object[:delta].each do |pair|
+      cp_off = pair[:cp_off]
+      cp_size = pair[:cp_size]
+      object[:data] << base_data[cp_off, cp_size]
+    end
+    puts object[:data]
+    object[:oid] = Digest::SHA1.hexdigest("blob #{object[:data].size}\0".b + object[:data])
   end
   zi.finish
   zi.close

@@ -1,10 +1,19 @@
 ---
-title: "Git Pack Format"
+title: "Git Pack 格式"
 date: 2021-12-27T13:49:20+08:00
-tags: [""]
-categories: [""]
-draft: true
+tags: ["git"]
+categories: ["git"]
 ---
+
+git `.pack` 文件分为三大块：
+- 头部 12-byte
+- 1~n 个对象条目
+  - 对象条目
+    - n-byte 类型和长度
+    - 数据
+- 校验和 20-byte
+
+[测试数据](/files/git-pack-format.git.tar.gz)
 
 ## 头部 12-byte
 
@@ -14,24 +23,25 @@ draft: true
 
 ```text
 00000000  50 41 43 4b 00 00 00 02  00 00 00 06 90 0d 78 9c
-          ----------- ============ ----------- == == -----
-          P  A  C  K  版本 2       对象数量 6
+          ----------- ============ ----------- 
+          P  A  C  K  version      obj count 6
 ```
 
 ## 对象条目
 
-头部之后，是 N 个对象条目，有两种类型 `undeltified` 和 `deltified`。
-
-### undeltified
-
-#### 类型和长度
+头部之后，是 N 个对象条目，每个条目有两部分：
 
 - n-byte 类型和长度(3-bit 类型, (n-1)*7+4-bit length)
+- 条目内容(undeltified 和 deltified 两类)
 
-|------------+------------+--------------+------------+--------------|
-| 1-bit flag | 3-bit type | 4-bit length | 1-bit flag | 7-bit length |
-|------------+------------+--------------+------------+--------------|
+### n-byte 类型和长度
 
+- n-byte 类型和长度(3-bit 类型, (n-1)*7+4-bit length)
+  ```text
+  |----------------------------------------+---------------------------|
+  | 1-bit flag | 3-bit type | 4-bit length | 1-bit flag | 7-bit length |
+  |----------------------------------------+---------------------------|
+  ```
 - 第 1 字节
   - 1-bit 标志位: 1 继续读取下一字节；0 结束
   - 3-bit 类型
@@ -40,33 +50,36 @@ draft: true
   - 1-bit 标志位: 1 继续读取下一字节；0 结束
   - 7-bit 长度，高位
 
-类型包括:
+类型有 6 种，可分为 undeltified 和 deltified 两类:
 
-- `OBJ_COMMIT` (1)
-- `OBJ_TREE` (2)
-- `OBJ_BLOB` (3)
-- `OBJ_TAG` (4)
-- `OBJ_OFS_DELTA` (6)
-- `OBJ_REF_DELTA` (7)
+- undeltified
+  - `OBJ_COMMIT` (1)
+  - `OBJ_TREE` (2)
+  - `OBJ_BLOB` (3)
+  - `OBJ_TAG` (4)
+- deltified
+  - `OBJ_OFS_DELTA` (6)
+  - `OBJ_REF_DELTA` (7)
 
-长度计算，左低位，右高位
+长度计算：左字节为低位，右字节为高位
 
-#### 被压缩的数据
+### undeltified
 
-被压缩的数据，使用 deflate 进行压缩，解压后为 git 对象的具体内容。
+undeltified 仅包含被压缩的 git 对象数据， 使用 deflate 算法进行压缩。
 
-需要通过被压缩数据本身计算下一条目位置。
+需要通过被压缩数据计算下一条目位置。
 
 #### 示例
 
 ```text
 # git verify-pack 输出截取
+# SHA-1 type size size-in-packfile offset-in-packfile
 93869920eddd1d8c632cda85537d1547339472c6 commit 208 154 12
 
 # .pack 数据截取
 00000000  50 41 43 4b 00 00 00 02  00 00 00 06 90 0d 78 9c
-          ----------- ============ ----------- ===== -----
-          P  A  C  K  版本 2       对象数量 6
+                                               =====
+                                               type and length
 ```
 
 - `0x90` = `0b1_001_0000` 
@@ -74,25 +87,26 @@ draft: true
   - `001` 类型 commit
   - `0000` 长度最低 4 位
 - `0x0d` = `0b0_0001101`
-  - `0`，表示当前字节为最后一个字节
+  - `0` 表示当前字节为最后一个字节
   - `0001101` 长度高 7 位
 
-所以数据长度为 `0b0001101_0000` = 0xd0 = 208 字节， `verify-pack` 数据一致。
+所以数据长度为 `0b0001101_0000` = 0xd0 = 208 字节， 和 `verify-pack` 数据一致。
+
 这里的数据长度是压缩前的大小，无法直接计算出下一个对象条目的位置，需要通过被压缩数据的来计算。
 
-`verify-pack` 中的打包长度 154 byte = 2 byte 类型和长度 + 152 byte 压缩数据。
+`verify-pack` 中的打包长度 154 byte = 2 byte(类型和长度) + 152 byte(压缩数据)。
 
-第一个对象条目的偏移是 12。
+第一个对象条目的偏移是 12(头部长度 12 byte)。
 
-读取压缩数据：
+通过 ruby 读取压缩数据：
 
 ```ruby
 require 'zlib'
 
 file = File.open('objects/pack/pack-164f4734388b5ebb26bf4607048798bec6ea6494.pack', 'r')
-file.seek(12 + 2)
+file.seek(12 + 2)                # 偏移 + 类型长度段
 zstream = Zlib::Inflate.new
-puts zstream.inflate(file.read)  # 被压缩的数据
+puts zstream.inflate(file.read)  # 被压缩的数据，读取的数据超出了压缩数据长度
 puts zstream.total_out           # 208 byte 压缩前数据大小
 puts zstream.total_in            # 152 byte 压缩后数据大小
 zstream.finish
@@ -103,24 +117,26 @@ zstream.close
 
 ### deltified
 
-#### 类型和长度
+deltified 有两种类型：
+- ref delta
+- ofs delta
+  - n-byte 偏移
+  - 被压缩的数据
 
-- n-byte 类型和长度(3-bit 类型, (n-1)*7+4-bit length)
+#### ofs delta
 
-|------------+------------+--------------+------------+--------------|
-| 1-bit flag | 3-bit type | 4-bit length | 1-bit flag | 7-bit length |
-|------------+------------+--------------+------------+--------------|
+ofs delta 在包内 offset 位置的获取基础对象，解析获取原始数据，以该原始对象为基础取一个或者多个 (offset, size) 进行拼接形成完整的数据
 
-deltified 有两种类型：REF_DELTA 和 OFS_DELTA。
+##### 基础对象相对偏移
 
-#### OFS DELTA
+基础对象相对偏移(pack 内偏移)
 
 - n-byte 相对偏移，相对于当前条目起始位置的偏移
-
-|------------+--------------+------------+--------------|
-| 1-bit flag | 7-bit offset | 1-bit flag | 7-bit offset |
-|------------+--------------+------------+--------------|
-
+  ```text
+  |------------+--------------+------------+--------------|
+  | 1-bit flag | 7-bit offset | 1-bit flag | 7-bit offset |
+  |------------+--------------+------------+--------------|
+  ```
 - 1-bit 标志位: 1 继续读取下一字节；0 结束
 - 7-bit 偏移，左高位，右低位
 
@@ -141,94 +157,94 @@ base_offset
 
 数据的绝对偏移 = 当前条目的偏移 - 相对偏移(base_offset)
 
-#### 被压缩的数据
+##### 被压缩的数据
 
 被压缩的数据，使用 deflate 进行压缩。
 
-数据解压
-
-##### 对象大小
+数据解压后分为：
 
 - n-byte 基础对象大小
-- n-type 当前对象大小
+- n-byte 当前对象大小
+- n-byte delta 数据：其中包含多个 (offset, size) 对，该偏移是基础对象原始数据内的偏移
 
-|------------+--------------+------------+--------------|
-| 1-bit flag | 7-bit offset | 1-bit flag | 7-bit offset |
-|------------+--------------+------------+--------------|
+对象大小计算：
 
 ```text
-base size         size
-a7       01       a2       01
-10100111 00000001 10100010 00000001
-低       高
-10100111          10100010
-167               162
+|---------------------------+---------------------------|
+| 1-bit flag | 7-bit offset | 1-bit flag | 7-bit offset |
+|---------------------------+---------------------------|
 ```
 
-##### 偏移和大小
+- 第 1~n 字节
+  - 1-bit 标志位: 1 继续读取下一字节；0 结束
+  - 7-bit 长度
 
-  +----------+---------+---------+---------+---------+-------+-------+-------+
-  | 1xxxxxxx | offset1 | offset2 | offset3 | offset4 | size1 | size2 | size3 |
-  +----------+---------+---------+---------+---------+-------+-------+-------+
+第 1 字节为低位，第 n 字节为高位
+
+delta 数据包含偏移和大小，意思是相对于基础 git 对象(未压缩)数据偏移 offset 字节后读取 size 字节。
+
+```text
++----------+---------+---------+---------+---------+-------+-------+-------+
+| 1xxxxxxx | offset1 | offset2 | offset3 | offset4 | size1 | size2 | size3 |
++----------+---------+---------+---------+---------+-------+-------+-------+
+```
 
 - `1-byte` 标识
   - `1-bit` 1 继续读取下一段
-  - `3-bit` 小端，1 表示对应的偏移字节位存在，需要继续读取 0~3 字节作为长度
-  - `4-bit` 小端，1 标识对应的大小字节位存在，需要继续读取 0~4 字节作为偏移
+  - `3-bit` 三个大小位(小端，低位在右侧)，位为 1 时表示对应的偏移字节位存在，需要继续读取 1 字节作为长度
+  - `4-bit` 四个偏移位(小端，低位在右侧)，位为 1 标识对应的大小字节位存在，需要继续读取 1 字节作为偏移
 - `0~7-byte` 偏移或者大小
-
-相对于基础对象偏移 offset 字节后读取 size 字节。
-
-偏移和大小为小端，最低位在右侧，如 `0b1_001_0010` 中，offset `0010` 第 2 位置 1，size`001` 第 1 位置 1
 
 #### 示例
 
 ```text
 # git verify-pack 输出截取
+# SHA-1 type size size-in-packfile offset-in-packfile
 5e0b62e32ef12479435b781852d35d00e7734b6e blob   167 89 335
 37d275cddcb6d23c12c9103c031c0371d49f4831 tree   38 48 424
+# SHA-1 type size size-in-packfile offset-in-packfile depth base-SHA-1
 bc8e5eb13b8e17363744051b29a3e53bad1562cc blob   9 20 472 1 5e0b62e32ef12479435b781852d35d00e7734b6e
 
 # .pack 文件数据截取
 000001d0  a2 49 67 00 d5 2d 0c 72  69 80 09 78 9c 5b ce b8
-          -----------------------  == ----- ==============
-                                   0110 1001
-                                      1000 0000 0000 1001
+                                   == ----- ==============
 000001e0  88 71 42 fb 44 33 69 00  11 8a 03 45 16 4f 47 34
           ====================================
 ```
 
+类型长度、基础对象偏移：
+
 - `0x69` = `0b0_100_0101`
   - `0` 不需要读取下一个字节
   - `110` 类型 `OBJ_OFS_DELTA`
-  - `1001` 长度 9
+  - `1001` 长度 9，被压缩部分长度
 - `0x80` = `0b1_000_0000`
   - `1` 需要读取下一个字节
-  - `000 0000` 偏移高 7 位
+  - `000_0000` 偏移高 7 位
 - `0x09` = `0b0_000_1001`
   - `0` 不需要读取下一个字节
-  - `000 1001` 偏移低 7 位
+  - `000_1001` 偏移低 7 位
 
 相对于该节点起点的偏移量计算 ((0b000_0000 + 1) << 7) + (0b000_1001) = 137
 
-绝对偏移量 472 - 137 = 335，335 为另一个 blob 对象的偏移
+绝对偏移量 472(当前对象偏移) - 137(相对偏移) = 335，335 为另一个 blob 对象的偏移
 
 ```ruby
 require 'zlib'
 
 file = File.open('objects/pack/pack-164f4734388b5ebb26bf4607048798bec6ea6494.pack', 'r')
-file.seek(472 + 3)
+file.seek(472 + 3) # 3 字节 = 1 byte 类型长度段 + 1 byte 基础对象偏移段
 zstream = Zlib::Inflate.new
 buf = zstream.inflate(file.read)
-zstream.total_out # 9
-zstream.total_in  # 17 = 20 - 3
+zstream.total_out  # 9  压缩前大小
+zstream.total_in   # 17 压缩后大小
 zstream.finish
 zstream.close
 buf.bytes.map{|b| b.to_s(16) }.join(' ')
 # a7 1 a2 1 90 87 91 36 1b
 ```
 
-数据解压后为
+数据解压后为 `a7 1 a2 1 90 87 91 36 1b`
 
 ```text
 00000000  a7 01 
@@ -245,7 +261,8 @@ buf.bytes.map{|b| b.to_s(16) }.join(' ')
           offset = 00110110 = 54 , size = 00011011 = 27 [54,27]
 ```
 
-当前数据为 `base_object[0, 135]` 以及 `base_objects[54, 27]`
+当前数据 [offset, size] 为 `base_object[0, 135]` 以及 `base_objects[54, 27]`
+
 
 ## 校验和 20-byte
 
@@ -260,7 +277,6 @@ Digest::SHA1.hexdigest(file.read(file.size-20))
 file.read.unpack1('H*')
 # 164f4734388b5ebb26bf4607048798bec6ea6494
 ```
-
 
 ## 仅包含 undeltified 示例
 
