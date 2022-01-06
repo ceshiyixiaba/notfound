@@ -16,6 +16,12 @@ find . -maxdepth 1 -mindepth 1 -type d -empty -print -delete
 - `print` 标准输出打印文件路径
 - `delete` 执行删除操作
 
+## 删除 30 天前的所有文件
+
+```bash
+find . -mindepth 1 -maxdepth 1 -type d -mtime +30 -exec rm -rf {} \;
+```
+
 ## 清空所有文件
 
 ```bash
