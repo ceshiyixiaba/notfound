@@ -7,19 +7,24 @@ categories: ["git"]
 
 ## 格式
 
-- 4-byte 魔数 `ff 74 4f 63` 做为签名
+- 4-byte 魔数(magic number) `ff 74 4f 63` 做为签名
 - 4-byte 版本号，网络字节序，一般为 `2`
-- 256 个 4-byte 网络字节序整数，对应对象名称从 0x00 ~ 0xff，位置 N 记录了从 0x00~N 包含的对象数量
-- 对象名称表，按照 0x00 ~ 0xff 排序
-- 4-byte CRC32 表，与对象名称表顺序一致
-- 4-byte 偏移表，与对象名称表顺序一致
-- 8-byte 偏移表，包文件小于 2 GB 时不存在该表
+- 256 * 4-byte 扇出表(fan-out)，256 个 4-byte 网络字节序整数，在 [0x00, 0xff] 区间，与对象名称第一个字节一致，位置 N 记录了 [0x00, N] 区间包含的对象数量
+- n * 20-byte 对象名称表，按照 0x00 ~ 0xff 排序
+- n * 4-byte CRC32 表，顺序与对象名称表一致
+- n * 4-byte 偏移表，顺序与对象名称表一致
+- x * 8-byte 偏移表，包文件小于 2 GB 时不存在该表
 - 20-byte 对应 .pack 文件校验和
 - 20-byte 当前 .idx 文件校验和
 
 ## 示例
 
+[测试数据](/files/git-pack-format.git.tar.gz)
+
+仓库包情况：
+
 ```text
+$ git verify-pack --verbose objects/pack/pack-164f4734388b5ebb26bf4607048798bec6ea6494.idx
 93869920eddd1d8c632cda85537d1547339472c6 commit 208 154 12
 6f9ed2b9081959cb7153a50580d8b24a9ae2fd72 commit 157 121 166
 24ed1c14fc5a324338248b2e1056590413c91b3a tree   38 48 287
@@ -28,7 +33,11 @@ categories: ["git"]
 bc8e5eb13b8e17363744051b29a3e53bad1562cc blob   9 20 472 1 5e0b62e32ef12479435b781852d35d00e7734b6e
 ```
 
+
+idx 文件内容
+
 ```text
+$ hexdump -C objects/pack/pack-164f4734388b5ebb26bf4607048798bec6ea6494.idx
 00000000  ff 74 4f 63 00 00 00 02  00 00 00 00 00 00 00 00  |.tOc............|
           [magic num] [version 2]  [0x00     ] [0x01     ]
 00000090  00 00 00 00 00 00 00 00  00 00 00 01 00 00 00 01  |................|
@@ -76,4 +85,15 @@ bc8e5eb13b8e17363744051b29a3e53bad1562cc blob   9 20 472 1 5e0b62e32ef12479435b7
 000004d8
 ```
 
+### 过程
+
+定位 `93869920eddd1d8c632cda85537d1547339472c6`
+
+1. 从 fan-out 表中找到 0x92，0x93 位置，确定对象偏移在 [4,5)
+2. 通过二分搜索，在对象名称表中找到对象的偏移 4
+3. 在偏移表中，找到位置 4 (从 0 开始) 的值 12
+4. 从 .pack 文件偏移为 12 的位置读取数据
+
 ## 参考
+
+- https://github.com/git/git/blob/v2.34.1/Documentation/technical/pack-format.txt
