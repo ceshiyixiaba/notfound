@@ -1,19 +1,23 @@
 ---
-title: "Git Pack Idx Format"
+title: "Git Pack Idx 格式"
 date: 2022-01-04T17:49:35+08:00
 tags: ["git"]
 categories: ["git"]
-draft: true
 ---
 
-- 4-byte 签名 `ff 74 4f 63`
+## 格式
+
+- 4-byte 魔数 `ff 74 4f 63` 做为签名
 - 4-byte 版本号，网络字节序，一般为 `2`
-- 256 个 4-byte
-- 排序的 object names 表
-- 4-byte CRC32 表
-- 4-byte 偏移表
-- 20-byte checksum
-- 20-byte checksum
+- 256 个 4-byte 网络字节序整数，对应对象名称从 0x00 ~ 0xff，位置 N 记录了从 0x00~N 包含的对象数量
+- 对象名称表，按照 0x00 ~ 0xff 排序
+- 4-byte CRC32 表，与对象名称表顺序一致
+- 4-byte 偏移表，与对象名称表顺序一致
+- 8-byte 偏移表，包文件小于 2 GB 时不存在该表
+- 20-byte 对应 .pack 文件校验和
+- 20-byte 当前 .idx 文件校验和
+
+## 示例
 
 ```text
 93869920eddd1d8c632cda85537d1547339472c6 commit 208 154 12
@@ -22,7 +26,9 @@ draft: true
 5e0b62e32ef12479435b781852d35d00e7734b6e blob   167 89 335
 37d275cddcb6d23c12c9103c031c0371d49f4831 tree   38 48 424
 bc8e5eb13b8e17363744051b29a3e53bad1562cc blob   9 20 472 1 5e0b62e32ef12479435b781852d35d00e7734b6e
+```
 
+```text
 00000000  ff 74 4f 63 00 00 00 02  00 00 00 00 00 00 00 00  |.tOc............|
           [magic num] [version 2]  [0x00     ] [0x01     ]
 00000090  00 00 00 00 00 00 00 00  00 00 00 01 00 00 00 01  |................|
@@ -38,19 +44,19 @@ bc8e5eb13b8e17363744051b29a3e53bad1562cc blob   9 20 472 1 5e0b62e32ef12479435b7
 000002f0  00 00 00 05 00 00 00 05  00 00 00 06 00 00 00 06  |................|
           [0xba     ] [0xbb     ]  [0xbc     ] [0xbd     ]
 00000400  00 00 00 06 00 00 00 06  24 ed 1c 14 fc 5a 32 43  |........$....Z2C|
-          [0xff     ] [total obj]  [object 1
+          [0xfe     ] [0xff     ]  [object name 1
 00000410  38 24 8b 2e 10 56 59 04  13 c9 1b 3a 37 d2 75 cd  |8$...VY....:7.u.|
-                                             ] [object 2
+                                             ] [object name 2
 00000420  dc b6 d2 3c 12 c9 10 3c  03 1c 03 71 d4 9f 48 31  |...<...<...q..H1|
                                                          ]
 00000430  5e 0b 62 e3 2e f1 24 79  43 5b 78 18 52 d3 5d 00  |^.b...$yC[x.R.].|
-          [object 3
+          [object object 3
 00000440  e7 73 4b 6e 6f 9e d2 b9  08 19 59 cb 71 53 a5 05  |.sKno.....Y.qS..|
-                    ] [object 4
+                    ] [object name 4
 00000450  80 d8 b2 4a 9a e2 fd 72  93 86 99 20 ed dd 1d 8c  |...J...r... ....|
-                                ]  [object 5
+                                ]  [object name 5
 00000460  63 2c da 85 53 7d 15 47  33 94 72 c6 bc 8e 5e b1  |c,..S}.G3.r...^.|
-                                             ] [object 6
+                                             ] [object name 6
 00000470  3b 8e 17 36 37 44 05 1b  29 a3 e5 3b ad 15 62 cc  |;..67D..)..;..b.|
                                                          ]
 00000480  d8 38 b7 fb 97 c6 51 bd  97 b2 d3 89 53 3a 3b 33  |.8....Q.....S:;3|
@@ -62,9 +68,9 @@ bc8e5eb13b8e17363744051b29a3e53bad1562cc blob   9 20 472 1 5e0b62e32ef12479435b7
           =========== -----------  =========== -----------
           [335 off 3] [166 off 4]  [12  off 5] [472 off 6]
 000004b0  16 4f 47 34 38 8b 5e bb  26 bf 46 07 04 87 98 be  |.OG48.^.&.F.....|
-          [checksum
+          [checksum pack file
 000004c0  c6 ea 64 94 de 71 84 e6  45 b4 e4 24 b2 d8 ab e4  |..d..q..E..$....|
-                    ] [checksum
+                    ] [checksum idx file
 000004d0  c7 3f 74 59 73 96 76 83                           |.?tYs.v.|
                                 ]
 000004d8
