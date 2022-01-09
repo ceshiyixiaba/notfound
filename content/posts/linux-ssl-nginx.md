@@ -1,7 +1,8 @@
 ---
 title: "使用 OpenSSL 生成 Nginx 证书"
 date: 2021-11-21T08:11:40+08:00
-tags: ["nginx", "ssl"]
+lastmod: 2022-01-09T08:11:40+08:00
+tags: ["nginx", "ssl", "linux"]
 ---
 
 - fedora 35
@@ -154,6 +155,131 @@ server {
   ssl_certificate_key demo.ca.test.key;
   # ...
 }
+```
+
+## 多级证书
+
+```bash
+mkdir -p ssl/{ca_1,ca_2,client}
+```
+
+目录结构：
+
+```ssl
+├── ca_1
+├── ca_2
+└── client
+```
+### 根 CA
+
+在目录 `ca_1` 中执行
+
+1. 创建目录
+
+```bash
+mkdir -p demoCA/{certs,newcerts,crl,private}
+```
+
+2. 配置
+
+```bash
+cp /etc/ssl/openssl.cnf .
+sed -i 's/\/etc\/pki\/CA/demoCA/g' openssl.cnf
+touch demoCA/index.txt
+echo "01" > demoCA/serial
+```
+
+修改 `openssl.cnf`
+
+```diff
+-x509_extensions        = usr_cert
++x509_extensions        = v3_ca
+```
+
+3. 生成私钥和证书
+
+```bash
+openssl req -config openssl.cnf \
+  -new -x509 -newkey rsa:2048 \
+  -keyout demoCA/private/cakey.pem \
+  -out demoCA/cacert.pem
+```
+
+### 二级 CA
+
+在目录 `ca_2` 中执行
+
+1. 创建目录
+
+```bash
+mkdir -p demoCA/{certs,newcerts,crl,private} 
+```
+
+2. 配置
+
+```bash
+cp /etc/ssl/openssl.cnf .
+sed -i 's/\/etc\/pki\/CA/demoCA/g' openssl.cnf
+touch demoCA/index.txt
+echo "01" > demoCA/serial
+```
+
+3. 生成私钥和证书请求
+
+```bash
+openssl genrsa -out demoCA/private/cakey.pem 2048
+openssl req -config openssl.cnf \
+  -new -key demoCA/private/cakey.pem \
+  -out second.csr
+```
+
+#### 二级 CA 签名
+
+通过根  CA 对二级 CA 证书请求进行签名，在目录 `ca_1` 中执行
+
+```bash
+openssl ca -config openssl.cnf -in ../ca_2/second.csr -out ../ca_2/demoCA/cacert.pem
+```
+
+### 客户端
+
+在目录 `client` 中执行
+
+```bash
+cp /etc/ssl/openssl.cnf .
+openssl genrsa -out client.key 2048
+openssl req -config openssl.cnf -new -key client.key -out client.csr
+```
+
+#### 客户端签名
+
+在目录 `ca_2` 中执行
+
+```bash
+openssl ca -config openssl.cnf \
+  -in ../client/client.csr -out ../client/client.crt 
+```
+
+### 配置 Nginx
+
+```nginx
+server {
+  listen       443 ssl http2;
+  listen       [::]:443 ssl http2;
+  server_name  client.example.com;
+
+  ssl_certificate client.crt;
+  ssl_certificate_key client.key;
+  # ...
+}
+```
+
+配置多级证书时，需要将中间证书也添加到 `client.crt`，该文件包含两个证书：ca_2 和 client。也就是将 `ca_2/demoCA/cacert.pem` 和 `client/client.crt` 两个文件中的 `-----BEGIN CERTIFICATE-----` 和 `-----END CERTIFICATE-----` 部分放到同一个文件。根证书是可选的。
+
+测试证书有效性
+
+```bash
+openssl s_client -connect client.example.com:443
 ```
 
 ## 添加 CA 到 Linux 系统
