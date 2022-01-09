@@ -10,40 +10,22 @@ tags: ["nginx", "ssl", "linux"]
 ## 自签名证书
 
 1. 生成服务器私钥：
-
 ```bash
-openssl genrsa -out example.com.key 4096
+openssl genrsa -out example.com.key 2048
 ```
 
 2. 生成证书签名请求：
-
 ```bash
 openssl req -new -key example.com.key -out example.com.csr
 ```
 - `Common Name (eg, your name or your server's hostname)` 填写域名 `example.com`
 
 3. 使用证书签名请求以及私钥签发证书
-
 ```bash
 openssl x509 -req -days 365 -in example.com.csr -signkey example.com.key -out example.com.crt
 ```
 
-4. 配置 Nginx
-
-```nginx
-server {
-  listen       443 ssl http2;
-  listen       [::]:443 ssl http2;
-  server_name  example.com;
-
-  ssl_certificate example.com.crt;
-  ssl_certificate_key example.com.key;
-  # ...
-}
-```
-
 ## 生成自签名 CA 证书
-
 
 ### CA
 
@@ -58,7 +40,7 @@ touch index.txt
 echo "01" > serial
 ```
 
-2. 配置 ssl：
+2. 配置 openssl：
 
 ```bash
 cp /etc/ssl/openssl.cnf ~/ssl/openssl.cnf
@@ -114,47 +96,8 @@ openssl req -new -key demo.ca.test.key -out demo.ca.test.csr -config openssl.cnf
 - 注意输入域名 `Common Name (eg, your name or your server's hostname) []: demo.ca.test`
 
 3. 使用 CA 根证书签发客户端证书：
-
 ```bash
 openssl ca -in demo.ca.test.csr -out demo.ca.test.crt -config openssl.cnf
-```
-
-目录结构
-
-
-```text
-.
-├── demoCA
-│   ├── cacert.pem
-│   ├── certs
-│   ├── crl
-│   ├── index.txt
-│   ├── index.txt.attr
-│   ├── index.txt.old
-│   ├── newcerts
-│   │   └── 01.pem
-│   ├── private
-│   │   └── cakey.pem
-│   ├── serial
-│   └── serial.old
-├── demo.ca.test.crt
-├── demo.ca.test.csr
-├── demo.ca.test.key
-└── openssl.cnf
-```
-
-### 配置 Nginx
-
-```nginx
-server {
-  listen       443 ssl http2;
-  listen       [::]:443 ssl http2;
-  server_name  demo.ca.test;
-
-  ssl_certificate demo.ca.test.crt;
-  ssl_certificate_key demo.ca.test.key;
-  # ...
-}
 ```
 
 ## 多级证书
@@ -260,7 +203,7 @@ openssl ca -config openssl.cnf \
   -in ../client/client.csr -out ../client/client.crt 
 ```
 
-### 配置 Nginx
+## 配置 Nginx
 
 ```nginx
 server {
