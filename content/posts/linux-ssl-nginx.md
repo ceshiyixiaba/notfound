@@ -27,38 +27,36 @@ openssl x509 -req -days 365 -in example.com.csr -signkey example.com.key -out ex
 
 ## 生成自签名 CA 证书
 
+在目录 ssl 中执行操作
+
 ### CA
 
-测试域名为 `ca.test` 以及 `demo.ca.test`
+
+测试域名为 `example.com`
 
 1. 创建 CA 目录：
-
 ```bash
-mkdir -p ~/ssl/demoCA/{certs,newcerts,crl,private}
-cd ~/ssl/demoCA
-touch index.txt
-echo "01" > serial
+mkdir -p demoCA/{certs,newcerts,crl,private}
+touch demoCA/index.txt
+echo "01" > demoCA/serial
 ```
 
 2. 配置 openssl：
-
 ```bash
-cp /etc/ssl/openssl.cnf ~/ssl/openssl.cnf
+cp /etc/ssl/openssl.cnf .
 sed -i 's/\/etc\/pki\/CA/demoCA/g' openssl.cnf
 ```
 - CA 目录从 `/etc/pki/CA` 改为 `demoCA`
 
 3. 生成 CA 私钥和证书：
-
 ```bash
-openssl req -new -x509 -newkey rsa:4096 -keyout demoCA/private/cakey.pem \
+openssl req -new -x509 -newkey rsa:2048 -keyout demoCA/private/cakey.pem \
   -out demoCA/cacert.pem -config openssl.cnf
 ```
 - 输出目录与配置文件一致
-- 注意输入域名 `Common Name (eg, your name or your server's hostname) []:ca.test`
+- 注意输入域名 `Common Name (eg, your name or your server's hostname) []:example.com`
 
 4. 查看 key 和证书：
-
 ```bash
 # 查看 rsa 私钥
 openssl rsa -noout -text -in demoCA/private/cakey.pem
@@ -86,18 +84,18 @@ ssl
 
 1. 生成客户端私钥：
 ```bash
-openssl genrsa -out demo.ca.test.key 4096
+openssl genrsa -out example_com.key 2048
 ```
 
 2. 生成证书签名请求：
 ```bash
-openssl req -new -key demo.ca.test.key -out demo.ca.test.csr -config openssl.cnf
+openssl req -new -key example_com.key -out example_com.csr -config openssl.cnf
 ```
-- 注意输入域名 `Common Name (eg, your name or your server's hostname) []: demo.ca.test`
+- 注意输入域名 `Common Name (eg, your name or your server's hostname) []: example.com`
 
 3. 使用 CA 根证书签发客户端证书：
 ```bash
-openssl ca -in demo.ca.test.csr -out demo.ca.test.crt -config openssl.cnf
+openssl ca -in example_com.csr -out example_com.crt -config openssl.cnf
 ```
 
 ## 多级证书
