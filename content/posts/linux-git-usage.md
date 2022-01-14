@@ -1,6 +1,7 @@
 ---
 title: "Linux 安装配置 Git"
 date: 2018-03-20T23:30:00+08:00
+lastmod: 2022-01-03T17:04:05+08:00
 tags: ["git"]
 ---
 
@@ -28,6 +29,10 @@ ssh-keygen -t ed25519 -C "username@example.com"
 git config --global user.name $USERNAME
 git config --global user.email $EMAIL
 ```
+
+## ignore
+
+可编辑 `.git/info/exclude` 忽略到文件且不必添加到版本库，语法与 `.gitignore` 一致
 
 ## 配置其他
 
