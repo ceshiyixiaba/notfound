@@ -238,3 +238,4 @@ sudo update-ca-trust
 - https://docs.azure.cn/zh-cn/articles/azure-operations-guide/application-gateway/aog-application-gateway-howto-create-self-signed-cert-via-openssl
 - https://nginx.org/en/docs/http/configuring_https_servers.html
 - https://docs.fedoraproject.org/en-US/quick-docs/using-shared-system-certificates/
+- https://www.postgresql.org/docs/current/ssl-tcp.html

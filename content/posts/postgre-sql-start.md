@@ -28,6 +28,25 @@ sudo apt install pgadmin4
 
 - pgadmin4 图形客户端
 
+## Shell 命令创建用户和数据库
+
+```bash
+# 创建用户
+sudo -u postgres createuser --interactive --password $USER
+# 创建数据库并指定所有者
+sudo -u postgres createdb example_db -O $USER
+```
+
+当前用户 `$USER` 可直接登陆 PostgreSQL，无需输入密码：
+
+```bash
+psql -d example_db
+# 查看数据库基本信息
+\l example_db
+```
+
+这是因为 `/etc/postgresql/14/main/pg_hba.conf` 默认开启了 `peer` 认证，PostgreSQL 通过操作系统获取用户名将其作为数据库用户名直接登陆。
+
 ## 常用命令
 
 通过用户 `postgres` 启动客户端:
