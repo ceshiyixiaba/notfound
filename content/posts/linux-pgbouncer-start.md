@@ -33,8 +33,10 @@ example_db= host=127.0.0.1 port=5432 dbname=example_db
 [pgbouncer]
 auth_type = scram-sha-256
 auth_file = /usr/local/etc/pgbouncer/userlist.txt
-;; max_client_conn    ;; 客户端最大连接数
-;; default_pool_size  ;; 链接池大小
+;; 关注配置项
+;; max_client_conn     ;; 客户端最大连接数
+;; default_pool_size   ;; 链接池大小
+;; pool_mode = session ;; 连接池模式
 ```
 - 添加 example_db
 - `auth_type` 来自 PostgreSQL 配置文件 `/etc/postgresql/14/main/pg_hba.conf`
@@ -107,6 +109,7 @@ sudo systemctl start pgbouncer.service
 ```bash
 psql -h 127.0.0.1 -p 6432 -d example_db
 ```
+- pgbouncer 默认端口为 6432
 
 ## 连接测试
 
@@ -171,3 +174,4 @@ sleep 10
 - https://www.pgbouncer.org/
 - [PostgreSQL 为什么接受大量连接到数据库需要连接池](https://cloud.tencent.com/developer/article/1674779)
 - [PgBouncer 原理与深入](https://cloud.tencent.com/developer/article/1620394)
+- [Unsupported startup parameter: extra_float_digits](https://stackoverflow.com/questions/36495062/pycharm-and-postgres-error-unsupported-startup-parameter-extra-float-digits)
