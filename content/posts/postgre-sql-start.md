@@ -12,7 +12,7 @@ draft: false
 ### postgresql
 
 ```bash
-sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+sudo sh -c 'echo "deb [arch=amd64] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
 wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
 sudo apt-get update
 sudo apt-get install postgresql
@@ -32,7 +32,7 @@ sudo apt install pgadmin4
 
 ```bash
 # 创建用户
-sudo -u postgres createuser --interactive --password $USER
+sudo -u postgres createuser --interactive --pwprompt $USER
 # 创建数据库并指定所有者
 sudo -u postgres createdb example_db -O $USER
 ```
