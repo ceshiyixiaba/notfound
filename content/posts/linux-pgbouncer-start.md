@@ -33,8 +33,10 @@ example_db= host=127.0.0.1 port=5432 dbname=example_db
 [pgbouncer]
 auth_type = scram-sha-256
 auth_file = /usr/local/etc/pgbouncer/userlist.txt
-;; max_client_conn    ;; 客户端最大连接数
-;; default_pool_size  ;; 链接池大小
+;; 关注配置项
+;; max_client_conn     ;; 客户端最大连接数
+;; default_pool_size   ;; 链接池大小
+;; pool_mode = session ;; 连接池模式
 ```
 - 添加 example_db
 - `auth_type` 来自 PostgreSQL 配置文件 `/etc/postgresql/14/main/pg_hba.conf`
@@ -107,6 +109,7 @@ sudo systemctl start pgbouncer.service
 ```bash
 psql -h 127.0.0.1 -p 6432 -d example_db
 ```
+- pgbouncer 默认端口为 6432
 
 ## 连接测试
 
