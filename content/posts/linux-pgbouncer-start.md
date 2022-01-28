@@ -174,3 +174,4 @@ sleep 10
 - https://www.pgbouncer.org/
 - [PostgreSQL 为什么接受大量连接到数据库需要连接池](https://cloud.tencent.com/developer/article/1674779)
 - [PgBouncer 原理与深入](https://cloud.tencent.com/developer/article/1620394)
+- [Unsupported startup parameter: extra_float_digits](https://stackoverflow.com/questions/36495062/pycharm-and-postgres-error-unsupported-startup-parameter-extra-float-digits)
