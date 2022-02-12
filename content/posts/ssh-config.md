@@ -128,7 +128,9 @@ Host host_b
 ```
 - 通过 `host_a` 跳转到 `host_b`
 
-## 隧道：本地端口转发
+## 隧道
+
+### 本地端口转发
 
 ```bash
 ssh -L 3001:localhost:3000 192.168.1.2
@@ -137,6 +139,14 @@ ssh -L 127.0.0.1:3001:localhost:3000 192.168.1.2
 ```
 
 在本地机器使用 `127.0.0.1:3001` 如同在远程机器 192.168.1.2 上通过 `localhost:3000` 访问
+
+### 远程端口转发
+
+```bash
+ssh -R localhost:3000:127.0.0.1:3001 192.168.1.2
+```
+
+在远程机器 192.168.1.2 上使用 `localhost:3001` 如同在本地通过 `127.0.0.1:3000` 访问
 
 ## 签名
 
@@ -186,3 +196,4 @@ Good "git" signature for notfound@notfound.cn with ED25519 key SHA256:q0FZbVN2eF
 - <https://askubuntu.com/questions/87956/can-you-set-passwords-in-ssh-config-to-allow-automatic-login>
 - <https://wangdoc.com/ssh/basic.html>
 - <https://www.agwa.name/blog/post/ssh_signatures>
+- <https://www.cnblogs.com/f-ck-need-u/p/10482832.html>
