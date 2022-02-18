@@ -1,8 +1,7 @@
 ---
-title: "Linux Varnish Config"
+title: "Varnish 配置"
 date: 2022-02-17T13:58:27+08:00
 tags: ["tool", "linux", "http"]
-draft: true
 ---
 
 ## 参数
@@ -162,7 +161,7 @@ sub vcl_recv {
     set req.backend_hint = bar.backend();
 }
 ```
-- round_robin 轮询
+- `round_robin` 通过轮询方式实现负载均衡
 
 [官方文档](https://varnish-cache.org/docs/6.0/users-guide/vcl-backends.html)
 
