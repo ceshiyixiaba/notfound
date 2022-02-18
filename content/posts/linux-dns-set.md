@@ -82,10 +82,10 @@ Ubuntu 20.04 desktop 使用 netplan 管理网络。
 network:
   version: 2
   ethernets:
-     enp2s0:
-        dhcp4: true
-        nameservers:
-          addresses: [119.29.29.29]
+    enp2s0:
+      dhcp4: true
+      nameservers:
+        addresses: [119.29.29.29]
 ```
 
 先测试配置是否正确，尝试应用配置：
