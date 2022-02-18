@@ -6,6 +6,8 @@ draft: true
 ---
 
 ## 参数
+    
+systemd 文件默认参数如下：
 
 ```bash
 ExecStart=/usr/sbin/varnishd \
@@ -19,19 +21,15 @@ ExecStart=/usr/sbin/varnishd \
 - `-f` VCL 文件路径 
 - `-s` 后端存储
   - `malloc` 通过内存存储对象，内存不足是会使用交换分区。限制大小为 256m。
+- `-t TTL` 缓存对象默认生存时间，默认为 120s
 
-## 存储后端
+### 存储后端
 
-[官方文档](https://varnish-cache.org/docs/6.0/users-guide/storage-backends.html)
 
-### malloc
+可配置为内存或者文件存储。[官方文档](https://varnish-cache.org/docs/6.0/users-guide/storage-backends.html)
 
-`malloc[,size]` 通过内存存储对象，内存不足时会使用交换分区。
+`malloc[,size]` 通过内存存储对象，内存不足时会使用交换分区，如 `malloc,256m`。
 - `size` 内存限制大小
-
-如 `malloc,256m`。
-
-### file
 
 `file,path[,size[,granularity[,advice]]]`  将对象存储在由磁盘，通过 mmap 访问。
 - `path` 文件路径。
@@ -41,15 +39,41 @@ ExecStart=/usr/sbin/varnishd \
 - `granularity` 分配粒度，字节为单位。默认为 VM 页面大小
 - `advice` 如何使用映射区域，以便内和可以选择适当的预读和缓存技术。可能的值为 `normal` `random` 以及 `sequential`。默认为 `random`。Linux 系统上，大对象以及机械硬盘选择 `sequential` 可能会受益。
 
-<https://varnish-cache.org/docs/6.0/users-guide/sizing-your-cache.html>
+### 缓存大小
 
-### 调整缓存大小
 
-<https://varnish-cache.org/docs/6.0/users-guide/sizing-your-cache.html>
+通过 `sudo varnishstat` 观察 `n_lru_nuked` 计数器，观察是否有大量对象被淘汰。[官方文档](https://varnish-cache.org/docs/6.0/users-guide/sizing-your-cache.html)
 
-通过 `sudo varnishstat` 观察 `n_lru_nuked` 计数器，观察是否有大量对象被淘汰。
+## 命令
+
+### varnishstat
+
+```bash
+sudo varnishstat
+```
+
+- `MAIN.cache_hit` 缓存命中计数
+- `MAIN.cache_miss` 缓存未命中数
+- `MAIN.threads` 线程池中线程总数
+- `MAIN.n_object` 缓存中的 HTTP 对象（标头 + 正文，如果存在）的近似数量。
+- `MAIN.n_lru_nuked` 有多少对象被强制从存储中驱逐，以便为新对象腾出空间。
+- `SMA.s0.g_bytes` 从存储中分配的字节数
+- `SMA.s0.g_space` 存储中剩余的字节数
+
+
+### varnishtop
+
+```bash
+sudo varnishtop
+# 查看 URL 列表
+sudo varnishtop -i ReqURL
+# 查看 User-Agent
+sudo varnishtop -C -I ReqHeader:User-Agent
+```
 
 ## 头部
+
+Varnish 会添加 HTTP 方便排查问题：
 
 ```http
 HTTP/1.1 200 OK
@@ -67,26 +91,32 @@ Accept-Ranges: bytes
 Connection: keep-alive
 ```
 - `X-Varnish` 当前请求 ID 和填充缓存的请求 ID
-- `Age` 对象在 Varnish 中保存的时间
+- `Age` 对象在 Varnish 中保存的时间，单位秒
+- `Via` 缓存服务名称和版本
 
-### 配置 HIT 和 MISS
+### 添加自定义 HTTP 头部
 
-添加 HTTP 头部 `X-Cache: HIT`
+编辑 `/etc/varnish/default.vcl`：
 
 ```vcl
 sub vcl_recv {
+    # 接收到客户端请求
     unset req.http.X-Cache;
 }
 
 sub vcl_deliver {
     set resp.http.X-Cache = req.http.X-Cache;
+    set resp.http.Via = "1.1 varnish";
+    unset resp.http.X-Varnish;
 }
 
 sub vcl_hit {
+    # 命中缓存
     set req.http.X-Cache = "HIT";
 }
 
 sub vcl_miss {
+    # 未命中缓存
     set req.http.X-Cache = "MISS";
 }
 
@@ -95,6 +125,51 @@ sub vcl_pass {
 }
 ```
 
+- 添加 HTTP 头部 `X-Cache: HIT`
+- 隐藏版本号
+- 移除头部 `X-Varnish`
+
+
+[状态说明](https://varnish-cache.org/docs/6.0/reference/states.html)
+
+
+## 多后端服务器
+
+directors 可将多个后端作为一组后端。
+
+编辑 `/etc/varnish/default.vcl`：
+
+```vcl
+import directors;
+
+backend s1 {
+    .host = "127.0.0.1";
+    .port = "8080";
+}
+
+backend s2 {
+    .host = "127.0.0.1";
+    .port = "8081";
+}
+
+sub vcl_init {
+    new bar = directors.round_robin();
+    bar.add_backend(s1);
+    bar.add_backend(s2);
+}
+
+sub vcl_recv {
+    set req.backend_hint = bar.backend();
+}
+```
+- round_robin 轮询
+
+[官方文档](https://varnish-cache.org/docs/6.0/users-guide/vcl-backends.html)
+
 ## 参考
 
-- <https://docs.varnish-software.com/tutorials/hit-miss-logging/>
+- <https://varnish-cache.org/docs/6.0/reference/varnishd.html>
+- <https://varnish-cache.org/docs/6.0/reference/states.html>
+- <https://varnish-cache.org/docs/6.0/users-guide/increasing-your-hitrate.html>
+- <https://docs.varnish-software.com/tutorials/hit-miss-logging>
+- <https://www.varnish-software.com/developers/tutorials/multiple-backends>

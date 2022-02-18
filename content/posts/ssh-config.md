@@ -186,3 +186,4 @@ Good "git" signature for notfound@notfound.cn with ED25519 key SHA256:q0FZbVN2eF
 - <https://askubuntu.com/questions/87956/can-you-set-passwords-in-ssh-config-to-allow-automatic-login>
 - <https://wangdoc.com/ssh/basic.html>
 - <https://www.agwa.name/blog/post/ssh_signatures>
+- <https://www.cnblogs.com/f-ck-need-u/p/10482832.html>
