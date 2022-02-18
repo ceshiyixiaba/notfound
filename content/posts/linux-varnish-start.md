@@ -2,7 +2,6 @@
 title: "Ubuntu 安装 varnish LTS"
 date: 2022-02-16T17:57:10+08:00
 tags: ["tool", "linux", "http"]
-draft: true
 ---
 
 - 环境 Ubuntu 20.04
