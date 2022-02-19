@@ -2,7 +2,10 @@
 title: "Linux 安装配置 Minio Client"
 date: 2021-09-04T11:47:51+08:00
 tags: ["minio"]
+categories: ["minio"]
 ---
+
+- 系统环境 Ubuntu 20.04
 
 ## 安装
 

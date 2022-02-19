@@ -1,8 +1,8 @@
 ---
 title: "Linux Varnish Http Header"
 date: 2022-02-18T18:56:59+08:00
-tags: [""]
-categories: [""]
+tags: ["varnish"]
+categories: ["varnish"]
 draft: true
 ---
 
