@@ -1,7 +1,8 @@
 ---
 title: "Varnish 配置"
 date: 2022-02-17T13:58:27+08:00
-tags: ["tool", "linux", "http"]
+tags: ["varnish"]
+categories: ["varnish"]
 ---
 
 ## 参数
