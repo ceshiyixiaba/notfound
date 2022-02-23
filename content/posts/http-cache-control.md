@@ -33,8 +33,8 @@ HTTP/1.1 304 Not Modified
 ETag: "7a6ee48ea7568446c2658e55ac389b1a"
 ```
 1. 第一次客户端直接请求
-    1. 服务务端返回 200，并包含 `ETag` 头部和完整 body
-2. 第二次客户端发送请求时携带 `If-None-Match: {ETag}` 头部
+    1. 服务务端返回 200，并包含头部 `ETag` 和完整 body
+2. 第二次客户端发送请求时携带头部 `If-None-Match: {ETag}`
     1. 服务端通过 `If-None-Match` 的值 `ETag` 判断数据是否过期，未过期时直接返回 304 和 ETag，body 为空
 
 ETag 可以是内容的哈希或者其他值，在命中 ETag 的情况下，减少了数据的传输。

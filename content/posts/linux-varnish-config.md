@@ -145,11 +145,25 @@ import directors;
 backend s1 {
     .host = "127.0.0.1";
     .port = "8080";
+    .probe = {
+         .url = "/";
+         .timeout = 1s;
+         .interval = 5s;
+         .window = 5;
+         .threshold = 3;
+     }
 }
 
 backend s2 {
     .host = "127.0.0.1";
     .port = "8081";
+    .probe = {
+         .url = "/";
+         .timeout = 1s;
+         .interval = 5s;
+         .window = 5;
+         .threshold = 3;
+     }
 }
 
 sub vcl_init {
@@ -163,6 +177,14 @@ sub vcl_recv {
 }
 ```
 - `round_robin` 通过轮询方式实现负载均衡
+- `probe` 健康检查
+  - `url` GET 请求 `/`
+  - `timeout` 请求超时时间 1s
+  - `interval` 检查后端的时间间隔 5s
+  - `window` 5 次
+  - `threshold` 临界值 3，每 5 次投票 3 次成功则认为时健康的
+
+连接后端默认会使用连接池。
 
 [官方文档](https://varnish-cache.org/docs/6.0/users-guide/vcl-backends.html)
 
@@ -173,3 +195,4 @@ sub vcl_recv {
 - <https://varnish-cache.org/docs/6.0/users-guide/increasing-your-hitrate.html>
 - <https://docs.varnish-software.com/tutorials/hit-miss-logging>
 - <https://www.varnish-software.com/developers/tutorials/multiple-backends>
+- <https://varnish-cache.org/docs/6.0/users-guide/vcl-backends.html>

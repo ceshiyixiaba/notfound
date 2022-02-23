@@ -1,22 +1,21 @@
 ---
 title: "Ubuntu 搭建 Prometheus"
 date: 2020-05-14T18:38:20+08:00
+lastmod: 2022-02-22T16:50:07+08:00
 tags: ["monitoring"]
 categories: ["monitoring"]
 draft: false
 ---
 
-- 系统环境 Ubuntu 18.04
+- 系统环境 Ubuntu 20.04
 
 ## 安装
 
 下载 <https://prometheus.io/download/>
 
 ```shell
-# 下载
-wget https://github.com/prometheus/prometheus/releases/download/v2.18.1/prometheus-2.18.1.linux-amd64.tar.gz
-# 解压　
-tar -zxvf prometheus-2.18.1.linux-amd64.tar.gz
+wget https://github.com/prometheus/prometheus/releases/download/v2.33.3/prometheus-2.33.3.linux-amd64.tar.gz
+tar -zxvf prometheus-2.33.3.linux-amd64.tar.gz
 # 启动
 ./prometheus --config.file=prometheus.yml
 ```

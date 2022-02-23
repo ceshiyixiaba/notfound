@@ -1,6 +1,7 @@
 ---
 title: "Ubuntu 安装 Grafana"
 date: 2020-05-14T18:39:26+08:00
+lastmod: 2022-02-22T16:50:07+08:00
 tags: ["monitoring"]
 categories: ["monitoring"]
 draft: false
@@ -10,14 +11,12 @@ draft: false
 
 ## 安装
 
-下载 <https://prometheus.io/download/>
+下载 <https://grafana.com/grafana/download?edition=oss>
 
-```shell
-# 下载
-wget https://dl.grafana.com/oss/release/grafana-6.7.3.linux-amd64.tar.gz
-# 解压
-tar -zxvf grafana-6.7.3.linux-amd64.tar.gz
-# 启动
+```bash
+wget https://dl.grafana.com/oss/release/grafana-8.4.1.linux-amd64.tar.gz
+tar -zxvf grafana-8.4.1.linux-amd64.tar.gz
+
 ./bin/grafana-server web
 ```
 
