@@ -3,7 +3,6 @@ title: "Linux Varnish 添加 Prometheus 监控"
 date: 2022-02-22T18:02:04+08:00
 tags: ["varnish", "monitoring"]
 categories: ["varnish"]
-draft: true
 ---
 
 ## 安装

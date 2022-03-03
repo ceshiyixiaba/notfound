@@ -1,7 +1,7 @@
 ---
 title: "Nginx CORS 配置"
 date: 2020-05-01T12:23:24+08:00
-tags: ["nginx", "cors"]
+tags: ["nginx"]
 draft: false
 ---
 
