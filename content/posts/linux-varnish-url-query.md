@@ -63,3 +63,4 @@ sub vcl_recv {
 ## 参考
 
 - [Varnish 6 by Example](https://info.varnish-software.com/resources/varnish-6-by-example-book)#4.6.2 Sanitizing the URL
+- <https://stackoverflow.com/questions/31879405/how-to-keep-specific-query-parameters-in-varnish>
