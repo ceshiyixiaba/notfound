@@ -1,0 +1,24 @@
+@startuml
+interface Builder
+Builder : BuildPart()
+
+ConcreteBuilder -|> Builder
+ConcreteBuilder : BuildPart()
+ConcreteBuilder : GetResult()
+
+ConcreteBuilder ..> Product
+
+
+class Director
+Director : Construct()
+Director o-- Builder : builder
+
+note right of Director::Construct()
+for all objects in structure {
+        build->BuildPart()
+}
+end note
+
+@enduml
+
+

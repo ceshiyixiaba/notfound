@@ -1,0 +1,28 @@
+@startuml
+interface Component
+Component : {abstract} Operation()
+Component : {abstract} Add(Component)
+Component : {abstract} Remove(Component)
+Component : {abstract} GetChild(int)
+
+class Leaf
+Leaf : Operation()
+
+class Composite
+Composite : Operation()
+Composite : Add(Component)
+Composite : Remove(Component)
+Composite : GetChild(int)
+
+note right of Composite::Operation
+forall g in children
+  g.Operation();
+end note
+
+Leaf -|> Component
+Component <|- Composite
+
+Client --> Component
+
+Component <-o Composite : children
+@enduml

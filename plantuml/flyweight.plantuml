@@ -1,0 +1,23 @@
+@startuml
+interface Flyweight
+Flyweight : {abstract} Operation(extrinsicState)
+
+class ConcreteFlyweight
+ConcreteFlyweight : Operation(extrinsicState)
+ConcreteFlyweight : intrinsicState
+ConcreteFlyweight -|> Flyweight
+
+class UnsharedConcreteFlyweight
+UnsharedConcreteFlyweight : Operation(extrinsicState)
+UnsharedConcreteFlyweight : extrinsicState
+Flyweight <|- UnsharedConcreteFlyweight
+
+class FlyweightFactory
+Flyweight <-o FlyweightFactory : flyweights
+
+class Client
+Client --> FlyweightFactory
+Client --> ConcreteFlyweight
+Client --> UnsharedConcreteFlyweight
+
+@enduml

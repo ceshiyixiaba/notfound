@@ -1,0 +1,27 @@
+participant aClient
+participant aDirector
+participant aConcreteBuilder
+
+activate aClient
+        aClient --> aConcreteBuilder : new ConcreteBuilder
+        activate aConcreteBuilder
+        deactivate aConcreteBuilder
+        aClient --> aDirector : new Director(aConcreteBuilder)
+        activate aDirector
+        deactivate aDirector
+        aClient --> aDirector : Construct()
+        activate aDirector
+                aDirector --> aConcreteBuilder : BuilderPartA()
+                activate aConcreteBuilder
+                deactivate aConcreteBuilder
+                aDirector --> aConcreteBuilder : BuilderPartB()
+                activate aConcreteBuilder
+                deactivate aConcreteBuilder
+                aDirector --> aConcreteBuilder : BuilderPartC()
+                activate aConcreteBuilder
+                deactivate aConcreteBuilder
+        deactivate aDirector
+        aClient --> aConcreteBuilder : GetResult()
+        activate aConcreteBuilder
+        deactivate aConcreteBuilder
+deactivate aClient
