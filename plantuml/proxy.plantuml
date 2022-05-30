@@ -1,0 +1,19 @@
+@startuml
+interface Subject
+Subject : {abstract} Request()
+
+class RealSubject
+RealSubject : Request()
+RealSubject -|> Subject
+
+class Proxy
+Proxy : Request()
+Subject <|- Proxy
+
+note right of Proxy::Request
+realSubject->Request();
+end note
+
+class Client
+Client --> Subject
+@enduml

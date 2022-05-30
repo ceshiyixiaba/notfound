@@ -1,0 +1,28 @@
+@startuml
+interface Abstraction
+Abstraction : Operation()
+
+
+class Client
+Client --> Abstraction
+
+class RefinedAbstraction
+RefinedAbstraction -|> Abstraction
+
+interface Implementor
+Implementor : {abstract} OperationImp()
+
+Abstraction o-> Implementor : imp
+
+class ConcretImplementorA
+ConcretImplementorA : OperationImp()
+ConcretImplementorA -|> Implementor
+
+class ConcretImplementorB
+ConcretImplementorB : OperationImp()
+Implementor <|- ConcretImplementorB
+
+note right of Abstraction::Operation
+imp->OperationImp()
+end note
+@enduml

@@ -1,0 +1,25 @@
+@startuml
+interface Prototype
+Prototype : {abstract} Clone()
+
+class ConcretePrototype1
+ConcretePrototype1 -|> Prototype
+ConcretePrototype1 : Clone()
+note left of ConcretePrototype1::Clone()
+  return copy of self
+end note
+
+class ConcretePrototype2
+Prototype <|- ConcretePrototype2
+ConcretePrototype2 : Clone()
+note right of ConcretePrototype2::Clone()
+  return copy of self
+end note
+
+class Client
+Client : Operation()
+Client --> Prototype
+note right of Client::Operation()
+  p = prototype->Clone()
+end note
+@enduml

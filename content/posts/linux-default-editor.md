@@ -12,6 +12,9 @@ update-alternatives --set editor /usr/bin/vim.basic
 update-alternatives --list editor
 ```
 
+```bash
+```
+
 ## 参考
 
 - https://unix.stackexchange.com/questions/73484/how-can-i-set-vi-as-my-default-editor-in-unix
